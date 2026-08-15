@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { atualizarTudo } from "@/lib/atualizar";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireModule } from "@/lib/auth";
@@ -31,8 +31,7 @@ export async function salvarCliente(dados: FormData) {
   } else {
     await db.client.create({ data: valores });
   }
-
-  revalidatePath("/clientes");
+  atualizarTudo();
   redirect("/clientes");
 }
 
@@ -40,7 +39,7 @@ export async function excluirCliente(dados: FormData) {
   await requireModule("CLIENTES");
   const id = String(dados.get("id") ?? "");
   if (id) await db.client.delete({ where: { id } });
-  revalidatePath("/clientes");
+  atualizarTudo();
   redirect("/clientes");
 }
 
@@ -66,9 +65,7 @@ export async function salvarContrato(dados: FormData) {
   } else {
     await db.contract.create({ data: valores });
   }
-
-  revalidatePath("/contratos");
-  revalidatePath("/clientes");
+  atualizarTudo();
   redirect("/contratos");
 }
 
@@ -76,6 +73,6 @@ export async function excluirContrato(dados: FormData) {
   await requireModule("CONTRATOS");
   const id = String(dados.get("id") ?? "");
   if (id) await db.contract.delete({ where: { id } });
-  revalidatePath("/contratos");
+  atualizarTudo();
   redirect("/contratos");
 }

@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react";
 import { LinkButton } from "@/components/ui";
 
 export const metadata = { title: "Sem acesso — Move" };
@@ -6,7 +7,7 @@ export default function SemAcessoPage() {
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
       <div className="max-w-md text-center">
-        <p className="text-5xl">🔒</p>
+        <Lock className="mx-auto text-slate-300" size={44} strokeWidth={1.5} />
         <h1 className="mt-4 text-xl font-semibold text-slate-900">
           Esta área é só do administrador
         </h1>

@@ -74,7 +74,7 @@ export default async function FinanceiroPage() {
           </p>
           {r.cobrancasVencidas.length === 0 ? (
             <p className="py-4 text-center text-sm text-slate-400">
-              Nenhuma cobrança atrasada. 🎉
+              Nenhuma cobrança atrasada.
             </p>
           ) : (
             <ul className="divide-y divide-slate-100 text-sm">
@@ -102,7 +102,7 @@ export default async function FinanceiroPage() {
           </p>
           {r.contasVencidas.length === 0 ? (
             <p className="py-4 text-center text-sm text-slate-400">
-              Nenhuma conta atrasada. 🎉
+              Nenhuma conta atrasada.
             </p>
           ) : (
             <ul className="divide-y divide-slate-100 text-sm">

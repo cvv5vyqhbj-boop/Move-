@@ -51,7 +51,7 @@ export function MenuLateral({
   const conteudo = (
     <div className="flex h-full flex-col">
       <div className="px-5 py-6">
-        <p className="text-2xl font-bold tracking-tight text-marca-500">move</p>
+        <p className="text-2xl font-bold tracking-tight text-slate-900">move</p>
         <p className="text-xs text-slate-400">Sistema da agência</p>
       </div>
 
@@ -81,8 +81,14 @@ export function MenuLateral({
       </nav>
 
       <div className="border-t border-slate-200 p-4">
-        <p className="truncate text-sm font-medium text-slate-800">{nome}</p>
-        <p className="text-xs text-slate-500">{ROLES[cargo]}</p>
+        <Link
+          href="/minha-conta"
+          onClick={() => setAberto(false)}
+          className="block hover:text-marca-600"
+        >
+          <p className="truncate text-sm font-medium text-slate-800">{nome}</p>
+          <p className="text-xs text-slate-500">{ROLES[cargo]}</p>
+        </Link>
         <form action={sair} className="mt-3">
           <button
             type="submit"
@@ -100,7 +106,7 @@ export function MenuLateral({
     <>
       {/* Barra do topo, aparece so no celular */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:hidden">
-        <p className="text-xl font-bold text-marca-500">move</p>
+        <p className="text-xl font-bold text-slate-900">move</p>
         <button
           onClick={() => setAberto(true)}
           className="cursor-pointer text-slate-600"

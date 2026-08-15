@@ -107,7 +107,7 @@ export default async function PainelPage() {
 
           {minhasDemandas.length === 0 ? (
             <p className="py-6 text-center text-sm text-slate-400">
-              Nada em aberto por aqui. Tudo em dia! 🎉
+              Nada em aberto por aqui. Tudo em dia.
             </p>
           ) : (
             <ul className="divide-y divide-slate-100">

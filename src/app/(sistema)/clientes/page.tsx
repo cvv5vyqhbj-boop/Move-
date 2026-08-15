@@ -4,7 +4,9 @@ import { db } from "@/lib/db";
 import { date, money, timeSince } from "@/lib/format";
 import { EtiquetaCliente } from "@/components/etiquetas";
 import {
+  Button,
   EmptyRow,
+  Input,
   LinkButton,
   PageHeader,
   Stat,
@@ -16,16 +18,37 @@ import {
 
 export const metadata = { title: "Clientes — Move" };
 
-export default async function ClientesPage() {
+export default async function ClientesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   await requireModule("CLIENTES");
+  const busca = (await searchParams).busca?.trim();
 
-  const clientes = await db.client.findMany({
-    include: { contracts: true, demands: { select: { status: true } } },
-    orderBy: { startDate: "asc" },
-  });
+  // A lista respeita a busca; os números do topo são sempre da carteira inteira.
+  const [clientes, todos] = await Promise.all([
+    db.client.findMany({
+      where: busca
+        ? {
+            OR: [
+              { name: { contains: busca } },
+              { company: { contains: busca } },
+              { contactName: { contains: busca } },
+            ],
+          }
+        : {},
+      include: { contracts: true, demands: { select: { status: true } } },
+      orderBy: { startDate: "asc" },
+    }),
+    db.client.findMany({
+      include: { contracts: true },
+      orderBy: { startDate: "asc" },
+    }),
+  ]);
 
-  const ativos = clientes.filter((c) => c.status === "ATIVO");
-  const receitaMensal = clientes
+  const ativos = todos.filter((c) => c.status === "ATIVO");
+  const receitaMensal = todos
     .flatMap((c) => c.contracts)
     .filter((c) => c.status === "ATIVO")
     .reduce((soma, c) => soma + c.monthlyValue, 0);
@@ -48,10 +71,27 @@ export default async function ClientesPage() {
         />
         <Stat
           label="Cliente mais antigo"
-          value={clientes[0] ? timeSince(clientes[0].startDate) : "—"}
-          hint={clientes[0]?.name}
+          value={todos[0] ? timeSince(todos[0].startDate) : "—"}
+          hint={todos[0]?.name}
         />
       </div>
+
+      <form className="mb-4 flex flex-wrap gap-3">
+        <Input
+          name="busca"
+          defaultValue={busca ?? ""}
+          placeholder="Buscar por nome, empresa ou contato..."
+          className="max-w-sm"
+        />
+        <Button type="submit" variant="secundario">
+          Buscar
+        </Button>
+        {busca && (
+          <LinkButton href="/clientes" variant="secundario">
+            Limpar
+          </LinkButton>
+        )}
+      </form>
 
       <Table>
         <THead
@@ -68,7 +108,9 @@ export default async function ClientesPage() {
         <tbody>
           {clientes.length === 0 && (
             <EmptyRow colSpan={7}>
-              Nenhum cliente cadastrado ainda. Clique em “+ Novo cliente”.
+              {busca
+                ? `Nenhum cliente encontrado com “${busca}”.`
+                : "Nenhum cliente cadastrado ainda. Clique em “+ Novo cliente”."}
             </EmptyRow>
           )}
           {clientes.map((c) => {

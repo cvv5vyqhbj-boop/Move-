@@ -46,7 +46,7 @@ export function CartaoMeta({
             {meta.owner ? ` · ${meta.owner.name}` : ""}
           </p>
         </div>
-        {concluida && <Badge tone="verde">Batida 🎉</Badge>}
+        {concluida && <Badge tone="verde">Batida</Badge>}
       </div>
 
       {meta.description && (

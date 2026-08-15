@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { atualizarTudo } from "@/lib/atualizar";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireModule } from "@/lib/auth";
@@ -36,9 +36,7 @@ export async function salvarMeta(dados: FormData) {
   } else {
     await db.goal.create({ data: valores });
   }
-
-  revalidatePath("/metas");
-  revalidatePath("/");
+  atualizarTudo();
   redirect("/metas");
 }
 
@@ -46,7 +44,7 @@ export async function excluirMeta(dados: FormData) {
   await exigirAdmin();
   const id = String(dados.get("id") ?? "");
   if (id) await db.goal.delete({ where: { id } });
-  revalidatePath("/metas");
+  atualizarTudo();
   redirect("/metas");
 }
 
@@ -61,6 +59,5 @@ export async function atualizarProgresso(dados: FormData) {
   if (user.role !== "ADMIN" && meta.ownerId !== user.id) return;
 
   await db.goal.update({ where: { id }, data: { currentValue: valor } });
-  revalidatePath("/metas");
-  revalidatePath("/");
+  atualizarTudo();
 }

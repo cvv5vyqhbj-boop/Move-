@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { clsx } from "clsx";
 import {
@@ -126,6 +126,10 @@ function Coluna({
 export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
   const [demandas, setDemandas] = useState(inicial);
   const [, iniciar] = useTransition();
+
+  // Quando alguem da equipe mexe no quadro, os dados novos chegam por aqui.
+  useEffect(() => setDemandas(inicial), [inicial]);
+
   // Exige um pequeno arrasto antes de comecar, para o clique no link continuar funcionando.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

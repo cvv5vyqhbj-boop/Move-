@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { atualizarTudo } from "@/lib/atualizar";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireModule } from "@/lib/auth";
@@ -9,13 +9,6 @@ import { filtroDeVisibilidade } from "@/lib/demandas";
 function texto(dados: FormData, campo: string) {
   const valor = String(dados.get(campo) ?? "").trim();
   return valor || null;
-}
-
-function atualizarTelas() {
-  revalidatePath("/demandas");
-  revalidatePath("/kanban");
-  revalidatePath("/calendario");
-  revalidatePath("/");
 }
 
 export async function salvarDemanda(dados: FormData) {
@@ -43,7 +36,7 @@ export async function salvarDemanda(dados: FormData) {
     await db.demand.create({ data: valores });
   }
 
-  atualizarTelas();
+  atualizarTudo();
   redirect("/demandas");
 }
 
@@ -51,7 +44,7 @@ export async function excluirDemanda(dados: FormData) {
   await requireModule("DEMANDAS");
   const id = String(dados.get("id") ?? "");
   if (id) await db.demand.delete({ where: { id } });
-  atualizarTelas();
+  atualizarTudo();
   redirect("/demandas");
 }
 
@@ -67,5 +60,5 @@ export async function moverDemanda(id: string, status: string) {
   if (!permitida) return;
 
   await db.demand.update({ where: { id }, data: { status } });
-  atualizarTelas();
+  atualizarTudo();
 }

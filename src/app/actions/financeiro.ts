@@ -1,21 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { atualizarTudo } from "@/lib/atualizar";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireModule } from "@/lib/auth";
 
 function texto(dados: FormData, campo: string) {
   return String(dados.get(campo) ?? "").trim() || null;
-}
-
-function atualizarTelas() {
-  revalidatePath("/financeiro");
-  revalidatePath("/financeiro/pagar");
-  revalidatePath("/financeiro/receber");
-  revalidatePath("/relatorios");
-  revalidatePath("/calendario");
-  revalidatePath("/");
 }
 
 // --- Contas a pagar --------------------------------------------------------
@@ -43,7 +34,7 @@ export async function salvarConta(dados: FormData) {
     await db.payable.create({ data: valores });
   }
 
-  atualizarTelas();
+  atualizarTudo();
   redirect("/financeiro/pagar");
 }
 
@@ -59,14 +50,14 @@ export async function marcarComoPago(dados: FormData) {
         : { status: "PAGO", paidAt: new Date() },
     });
   }
-  atualizarTelas();
+  atualizarTudo();
 }
 
 export async function excluirConta(dados: FormData) {
   await requireModule("FINANCEIRO");
   const id = String(dados.get("id") ?? "");
   if (id) await db.payable.delete({ where: { id } });
-  atualizarTelas();
+  atualizarTudo();
   redirect("/financeiro/pagar");
 }
 
@@ -94,7 +85,7 @@ export async function salvarCobranca(dados: FormData) {
     await db.receivable.create({ data: valores });
   }
 
-  atualizarTelas();
+  atualizarTudo();
   redirect("/financeiro/receber");
 }
 
@@ -110,13 +101,13 @@ export async function marcarComoRecebido(dados: FormData) {
         : { status: "RECEBIDO", receivedAt: new Date() },
     });
   }
-  atualizarTelas();
+  atualizarTudo();
 }
 
 export async function excluirCobranca(dados: FormData) {
   await requireModule("FINANCEIRO");
   const id = String(dados.get("id") ?? "");
   if (id) await db.receivable.delete({ where: { id } });
-  atualizarTelas();
+  atualizarTudo();
   redirect("/financeiro/receber");
 }

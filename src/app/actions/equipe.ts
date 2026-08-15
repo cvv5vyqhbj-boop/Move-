@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { atualizarTudo } from "@/lib/atualizar";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
@@ -40,8 +40,7 @@ export async function salvarPessoa(dados: FormData) {
       },
     });
   }
-
-  revalidatePath("/equipe");
+  atualizarTudo();
   redirect("/equipe");
 }
 
@@ -51,7 +50,6 @@ export async function excluirPessoa(dados: FormData) {
 
   // Ninguém consegue apagar a própria conta e ficar sem acesso.
   if (id && id !== admin.id) await db.user.delete({ where: { id } });
-
-  revalidatePath("/equipe");
+  atualizarTudo();
   redirect("/equipe");
 }

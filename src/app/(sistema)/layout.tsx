@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { ROLE_MODULES } from "@/lib/permissions";
 import { MenuLateral } from "@/components/menu-lateral";
+import { AtualizacaoAutomatica } from "@/components/atualizacao-automatica";
 
 /** Moldura de todas as telas internas: menu de um lado, conteudo do outro. */
 export default async function SistemaLayout({
@@ -12,6 +13,7 @@ export default async function SistemaLayout({
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
+      <AtualizacaoAutomatica />
       <MenuLateral
         modules={ROLE_MODULES[user.role]}
         nome={user.name}

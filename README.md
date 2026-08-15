@@ -53,6 +53,19 @@ Os dados de exemplo já criam uma pessoa para cada cargo. **A senha de todas é
 | **Financeiro**    | Contas a pagar, a receber e o resumo com gráfico do mês               | Admin   |
 | **Relatórios**    | Quanto cada cliente rendeu e quanto já foi entregue                   | Admin   |
 | **Equipe**        | Quem tem acesso, com qual cargo e senha                               | Admin   |
+| **Minha conta**   | Cada pessoa troca a própria senha (clique no seu nome, no rodapé do menu) | Todos |
+
+### Atualização na hora, para todo mundo
+
+Ninguém precisa apertar F5. Assim que uma pessoa salva qualquer coisa, o servidor
+avisa todos os navegadores que estão com o sistema aberto e as telas se atualizam
+sozinhas — um card movido no kanban aparece na hora na tela de quem está olhando a
+lista de demandas.
+
+Quem faz isso: `src/lib/eventos.ts` (o aviso), `src/app/api/atualizacoes/route.ts`
+(a conexão que fica aberta) e `src/components/atualizacao-automatica.tsx` (o lado do
+navegador). Toda ação que grava chama `atualizarTudo()` de `src/lib/atualizar.ts` —
+é o único lugar a mexer se um dia isso mudar.
 
 ### Como funciona o controle de acesso
 

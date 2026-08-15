@@ -12,6 +12,7 @@ import {
 import {
   Button,
   EmptyRow,
+  Input,
   LinkButton,
   PageHeader,
   Select,
@@ -31,8 +32,22 @@ export default async function DemandasPage({
   const user = await requireModule("DEMANDAS");
   const filtros = await searchParams;
 
+  const busca = filtros.busca?.trim();
+
   const where = {
     ...filtroDeVisibilidade(user),
+    ...(busca
+      ? {
+          AND: [
+            {
+              OR: [
+                { title: { contains: busca } },
+                { description: { contains: busca } },
+              ],
+            },
+          ],
+        }
+      : {}),
     ...(filtros.cliente ? { clientId: filtros.cliente } : {}),
     ...(filtros.area ? { area: filtros.area } : {}),
     ...(filtros.pessoa ? { assigneeId: filtros.pessoa } : {}),
@@ -64,7 +79,13 @@ export default async function DemandasPage({
       />
 
       {/* Filtros: formulario simples, funciona sem depender de nada */}
-      <form className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <form className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <Input
+          name="busca"
+          defaultValue={busca ?? ""}
+          placeholder="Buscar pelo nome..."
+          className="lg:col-span-2"
+        />
         <Select
           name="cliente"
           defaultValue={filtros.cliente ?? ""}
