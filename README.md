@@ -44,23 +44,51 @@ Os dados de exemplo já criam uma pessoa para cada cargo. **A senha de todas é
 | Tela              | Para quê serve                                                        | Quem vê |
 | ----------------- | --------------------------------------------------------------------- | ------- |
 | **Painel**        | Resumo do mês: entregas próximas, atrasos e metas                     | Todos   |
-| **Demandas**      | Lista de tudo que precisa ser feito, com cliente, responsável e prazo | Todos   |
+| **Demandas**      | Lista de tudo que precisa ser feito, com cliente, responsável e prazo. Dentro de cada uma: **conversa da equipe** e **links dos materiais** | Todos |
 | **Kanban**        | Quadro de arrastar e soltar (Ideias → A fazer → Fazendo → Revisão → Pronto) | Todos |
 | **Metas do mês**  | Objetivos da agência, da equipe e de cada pessoa, com barra de progresso | Todos |
 | **Calendário**    | Prazos de entrega e (para o admin) vencimentos do mês                 | Todos   |
 | **Clientes**      | Ficha do cliente, tempo de casa, contratos e histórico                | Admin   |
 | **Contratos**     | O que cada cliente contratou, por quanto e desde quando               | Admin   |
-| **Financeiro**    | Contas a pagar, a receber e o resumo com gráfico do mês               | Admin   |
-| **Relatórios**    | Quanto cada cliente rendeu e quanto já foi entregue                   | Admin   |
+| **Financeiro**    | Contas a pagar, a receber e o resumo com gráfico do mês. Lança as **mensalidades do mês de uma vez**, a partir dos contratos | Admin |
+| **Relatórios**    | Quanto cada cliente rende, quanto custa e **o que sobra**; avisa dos **contratos a renovar** | Admin |
 | **Equipe**        | Quem tem acesso, com qual cargo e senha                               | Admin   |
 | **Minha conta**   | Cada pessoa troca a própria senha (clique no seu nome, no rodapé do menu) | Todos |
+
+### O sino de avisos
+
+No topo da tela, o sino mostra o que precisa de atenção hoje: suas demandas que
+venceram ou vencem hoje e — só para o administrador — clientes que não pagaram,
+contas vencidas e contratos chegando ao fim (aviso com 60 dias de antecedência).
+A regra fica em `src/lib/avisos.ts`.
+
+### Mensalidades sem digitar tudo de novo
+
+Em **Financeiro → A receber**, o botão "Lançar mensalidades" cria de uma vez a
+cobrança de cada contrato ativo do mês. Pode clicar quantas vezes quiser: se a
+mensalidade daquele contrato já existe no mês, ela não é criada de novo.
+
+### Lucro por cliente
+
+Ao lançar uma conta a pagar, dá para dizer **de qual cliente é aquele gasto**
+(freela, diária de filmagem, impulsionamento). Em Relatórios, a coluna
+**Sobra** mostra o que entrou menos esses custos — o que o cliente dá de lucro
+de verdade, não só o faturamento.
+
+### Levar para fora: planilha e PDF
+
+Em Relatórios e no Financeiro há dois botões: **Baixar planilha** (arquivo que
+abre no Excel, com acentos e vírgula decimal certos) e **Imprimir / PDF** (na
+janela de impressão, escolha "Salvar como PDF"). Ao imprimir, o menu e os botões
+somem — sai só o conteúdo.
 
 ### Atualização na hora, para todo mundo
 
 Ninguém precisa apertar F5. Assim que uma pessoa salva qualquer coisa, o servidor
 avisa todos os navegadores que estão com o sistema aberto e as telas se atualizam
 sozinhas — um card movido no kanban aparece na hora na tela de quem está olhando a
-lista de demandas.
+lista de demandas, e um comentário escrito numa demanda aparece na tela de quem
+está com ela aberta, como um chat.
 
 Quem faz isso: `src/lib/eventos.ts` (o aviso), `src/app/api/atualizacoes/route.ts`
 (a conexão que fica aberta) e `src/components/atualizacao-automatica.tsx` (o lado do
@@ -94,6 +122,8 @@ src/lib/permissions.ts   quem vê o quê  ← regra central de acesso
 src/lib/constants.ts     todos os textos e listas (áreas, cargos, situações)
 src/lib/format.ts        formatação de dinheiro, datas e "tempo de casa"
 src/lib/financeiro.ts    contas do financeiro, usadas no painel e nos relatórios
+src/lib/avisos.ts        o que aparece no sino de avisos
+src/lib/planilha.ts      geração dos arquivos de planilha (CSV)
 src/app/(sistema)/       as telas de dentro do sistema
 src/app/actions/         ações que gravam no banco
 src/components/          peças de tela reaproveitadas (tabelas, formulários, etiquetas)

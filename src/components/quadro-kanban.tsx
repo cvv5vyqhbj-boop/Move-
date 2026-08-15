@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { clsx } from "clsx";
+import { MessageSquare } from "lucide-react";
 import {
   DndContext,
   PointerSensor,
@@ -26,6 +27,7 @@ export type CardDemanda = {
   dueDate: Date | null;
   clienteNome: string;
   responsavelNome: string;
+  comentarios: number;
 };
 
 function Card({ demanda }: { demanda: CardDemanda }) {
@@ -64,7 +66,15 @@ function Card({ demanda }: { demanda: CardDemanda }) {
         </div>
 
         <div className="mt-2 flex items-center justify-between text-xs">
-          <span className="text-slate-400">{demanda.responsavelNome}</span>
+          <span className="flex items-center gap-1.5 text-slate-400">
+            {demanda.responsavelNome}
+            {demanda.comentarios > 0 && (
+              <span className="flex items-center gap-0.5" title="Comentários">
+                <MessageSquare size={11} />
+                {demanda.comentarios}
+              </span>
+            )}
+          </span>
           {demanda.dueDate && (
             <span className={atrasada ? "text-rose-600" : "text-slate-400"}>
               {date(demanda.dueDate)}

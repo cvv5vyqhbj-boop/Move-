@@ -14,13 +14,16 @@ export default async function EditarContaPage({
   await requireModule("FINANCEIRO");
   const { id } = await params;
 
-  const conta = await db.payable.findUnique({ where: { id } });
+  const [conta, clientes] = await Promise.all([
+    db.payable.findUnique({ where: { id } }),
+    db.client.findMany({ orderBy: { name: "asc" } }),
+  ]);
   if (!conta) notFound();
 
   return (
     <>
       <PageHeader title={conta.description} subtitle="Editar conta a pagar" />
-      <FormularioConta conta={conta} />
+      <FormularioConta conta={conta} clientes={clientes} />
     </>
   );
 }

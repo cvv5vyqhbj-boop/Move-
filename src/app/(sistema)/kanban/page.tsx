@@ -22,7 +22,11 @@ export default async function KanbanPage({
         ...(filtros.cliente ? { clientId: filtros.cliente } : {}),
         ...(filtros.area ? { area: filtros.area } : {}),
       },
-      include: { client: true, assignee: true },
+      include: {
+        client: true,
+        assignee: true,
+        _count: { select: { comments: true } },
+      },
       orderBy: [{ order: "asc" }, { createdAt: "asc" }],
     }),
     db.client.findMany({ orderBy: { name: "asc" } }),
@@ -74,6 +78,7 @@ export default async function KanbanPage({
           dueDate: d.dueDate,
           clienteNome: d.client?.name ?? "Interno",
           responsavelNome: d.assignee?.name ?? "Sem responsável",
+          comentarios: d._count.comments,
         }))}
       />
     </>

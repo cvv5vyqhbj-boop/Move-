@@ -7,13 +7,20 @@ type ContaEditavel = {
   description: string;
   supplier: string | null;
   category: string | null;
+  clientId: string | null;
   amount: number;
   dueDate: Date;
   status: string;
 };
 
 /** Formulario de conta a pagar (criar e editar). */
-export function FormularioConta({ conta }: { conta?: ContaEditavel }) {
+export function FormularioConta({
+  conta,
+  clientes,
+}: {
+  conta?: ContaEditavel;
+  clientes: { id: string; name: string }[];
+}) {
   return (
     <div className="space-y-4">
       <Card>
@@ -64,6 +71,18 @@ export function FormularioConta({ conta }: { conta?: ContaEditavel }) {
                 type="date"
                 defaultValue={dateInput(conta?.dueDate ?? new Date())}
                 required
+              />
+            </Field>
+
+            <Field
+              label="Gasto de qual cliente"
+              hint="Só se for um custo daquele cliente (freela, diária, impulsionamento). Isso entra no cálculo do lucro por cliente."
+            >
+              <Select
+                name="clientId"
+                defaultValue={conta?.clientId ?? ""}
+                placeholder="Gasto da agência (não é de cliente)"
+                options={clientes.map((c) => ({ value: c.id, label: c.name }))}
               />
             </Field>
 

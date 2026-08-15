@@ -40,10 +40,12 @@ export function MenuLateral({
   modules,
   nome,
   cargo,
+  sino,
 }: {
   modules: Module[];
   nome: string;
   cargo: Role;
+  sino?: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
@@ -107,13 +109,16 @@ export function MenuLateral({
       {/* Barra do topo, aparece so no celular */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:hidden">
         <p className="text-xl font-bold text-slate-900">move</p>
-        <button
-          onClick={() => setAberto(true)}
-          className="cursor-pointer text-slate-600"
-          aria-label="Abrir menu"
-        >
-          <Menu size={22} />
-        </button>
+        <div className="flex items-center gap-1">
+          {sino}
+          <button
+            onClick={() => setAberto(true)}
+            className="cursor-pointer p-2 text-slate-600"
+            aria-label="Abrir menu"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
       </div>
 
       {/* Menu fixo no computador */}

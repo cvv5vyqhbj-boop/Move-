@@ -1,13 +1,18 @@
 import Link from "next/link";
 import { requireModule } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { marcarComoRecebido } from "@/app/actions/financeiro";
-import { date, money } from "@/lib/format";
+import {
+  gerarMensalidadesDoMes,
+  marcarComoRecebido,
+} from "@/app/actions/financeiro";
+import { date, money, monthLabel } from "@/lib/format";
 import { AbasFinanceiro } from "@/components/abas-financeiro";
 import { EtiquetaPagamento } from "@/components/etiquetas";
 import {
   Button,
+  Card,
   EmptyRow,
+  Input,
   LinkButton,
   PageHeader,
   Stat,
@@ -19,8 +24,14 @@ import {
 
 export const metadata = { title: "Contas a receber — Move" };
 
-export default async function ContasAReceberPage() {
+export default async function ContasAReceberPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   await requireModule("FINANCEIRO");
+  const geradas = (await searchParams).geradas;
+  const hoje = new Date();
 
   const cobrancas = await db.receivable.findMany({
     include: { client: true },
@@ -46,6 +57,42 @@ export default async function ContasAReceberPage() {
       />
 
       <AbasFinanceiro />
+
+      {geradas !== undefined && (
+        <p className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          {Number(geradas) === 0
+            ? "As mensalidades deste mês já estavam lançadas. Nada foi duplicado."
+            : `${geradas} ${Number(geradas) === 1 ? "mensalidade lançada" : "mensalidades lançadas"} a partir dos contratos ativos.`}
+        </p>
+      )}
+
+      <Card className="mb-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-semibold text-slate-900">
+              Mensalidades de {monthLabel(hoje.getMonth() + 1, hoje.getFullYear())}
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Lança de uma vez a mensalidade de cada contrato ativo. Se já estiver
+              lançada, não duplica.
+            </p>
+          </div>
+          <form action={gerarMensalidadesDoMes} className="flex items-end gap-2">
+            <label className="text-sm">
+              <span className="mb-1 block text-slate-600">Vence dia</span>
+              <Input
+                name="dia"
+                type="number"
+                min={1}
+                max={28}
+                defaultValue={10}
+                className="w-20"
+              />
+            </label>
+            <Button type="submit">Lançar mensalidades</Button>
+          </form>
+        </div>
+      </Card>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <Stat label="A receber" value={money(total)} tone="positivo" />

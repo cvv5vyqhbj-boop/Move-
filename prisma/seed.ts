@@ -25,6 +25,8 @@ function inMonths(months: number) {
 
 async function main() {
   // Limpa antes de popular, para poder rodar de novo sem duplicar.
+  await db.comment.deleteMany();
+  await db.attachment.deleteMany();
   await db.goal.deleteMany();
   await db.receivable.deleteMany();
   await db.payable.deleteMany();
@@ -138,7 +140,7 @@ async function main() {
         title: "Pacote start (social + design)",
         monthlyValue: 2400,
         startDate: inMonths(-3),
-        endDate: inMonths(9),
+        endDate: inDays(45), // proposital: aparece no aviso de renovação
         status: "ATIVO",
       },
       {
@@ -188,16 +190,40 @@ async function main() {
     { title: "Organizar equipamentos para a próxima diária", area: "FILMAGEM", assigneeId: filmmaker.id, status: "BACKLOG", priority: "BAIXA" },
   ];
 
+  const demandasCriadas = [];
   for (const [i, d] of demandas.entries()) {
-    await db.demand.create({ data: { ...d, order: i } });
+    demandasCriadas.push(await db.demand.create({ data: { ...d, order: i } }));
   }
+
+  // --- Conversa e materiais em algumas demandas ---------------------------
+  const reels = demandasCriadas[0]; // "Editar 4 Reels da semana"
+  const institucional = demandasCriadas[2]; // "Vídeo institucional 60s"
+
+  await db.comment.createMany({
+    data: [
+      { demandId: reels.id, authorId: admin.id, text: "Bruno, a cliente pediu para começar pelo depoimento da Dona Cida. O resto pode seguir a ordem do roteiro." },
+      { demandId: reels.id, authorId: editor.id, text: "Fechado. Já separei os melhores trechos. Devo subir os cortes hoje à noite." },
+      { demandId: reels.id, authorId: copy.id, text: "Roteiro atualizado no link dos materiais, com as legendas revisadas." },
+      { demandId: institucional.id, authorId: admin.id, text: "Cliente aprovou a trilha. Falta ajustar o final, que ficou corrido." },
+    ],
+  });
+
+  await db.attachment.createMany({
+    data: [
+      { demandId: reels.id, title: "Roteiro dos Reels", url: "https://docs.google.com/document/d/exemplo-roteiro" },
+      { demandId: reels.id, title: "Material bruto (drive)", url: "https://drive.google.com/drive/folders/exemplo-bruto" },
+      { demandId: institucional.id, title: "Briefing do cliente", url: "https://drive.google.com/file/d/exemplo-briefing" },
+    ],
+  });
 
   // --- Contas a pagar -----------------------------------------------------
   await db.payable.createMany({
     data: [
       { description: "Adobe Creative Cloud (5 licenças)", supplier: "Adobe", category: "Software", amount: 1250, dueDate: inDays(4), status: "PENDENTE" },
       { description: "Aluguel do estúdio", supplier: "Imobiliária Central", category: "Estrutura", amount: 3200, dueDate: inDays(9), status: "PENDENTE" },
-      { description: "Freelancer de motion", supplier: "Lucas Motion", category: "Equipe", amount: 1800, dueDate: inDays(-3), status: "PENDENTE" },
+      { description: "Freelancer de motion", supplier: "Lucas Motion", category: "Equipe", amount: 1800, dueDate: inDays(-3), status: "PENDENTE", clientId: pulse.id },
+      { description: "Impulsionamento das campanhas", supplier: "Meta Ads", category: "Mídia", amount: 3500, dueDate: inDays(-8), status: "PAGO", paidAt: inDays(-8), clientId: pulse.id },
+      { description: "Diária de filmagem (freela)", supplier: "Rafa Câmera", category: "Equipe", amount: 900, dueDate: inDays(-12), status: "PAGO", paidAt: inDays(-12), clientId: padaria.id },
       { description: "Internet e telefonia", supplier: "Vivo Empresas", category: "Estrutura", amount: 430, dueDate: inDays(12), status: "PENDENTE" },
       { description: "Contador", supplier: "Contabilize", category: "Impostos", amount: 890, dueDate: inDays(-10), status: "PAGO", paidAt: inDays(-10) },
       { description: "Impostos do mês (Simples)", supplier: "Receita Federal", category: "Impostos", amount: 2740, dueDate: inDays(-15), status: "PAGO", paidAt: inDays(-15) },

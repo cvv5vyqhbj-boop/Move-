@@ -20,6 +20,7 @@ export async function salvarConta(dados: FormData) {
     description: String(dados.get("description") ?? "").trim(),
     supplier: texto(dados, "supplier"),
     category: texto(dados, "category"),
+    clientId: texto(dados, "clientId"),
     amount: Number(dados.get("amount") ?? 0),
     dueDate: new Date(String(dados.get("dueDate") || new Date().toISOString())),
     status: pago ? "PAGO" : "PENDENTE",
@@ -102,6 +103,54 @@ export async function marcarComoRecebido(dados: FormData) {
     });
   }
   atualizarTudo();
+}
+
+/**
+ * Cria as mensalidades do mês a partir dos contratos ativos.
+ *
+ * Pode clicar quantas vezes quiser: se a mensalidade daquele contrato já existe
+ * no mês, ela não é criada de novo.
+ */
+export async function gerarMensalidadesDoMes(dados: FormData) {
+  await requireModule("FINANCEIRO");
+
+  const hoje = new Date();
+  const mes = Number(dados.get("mes") ?? hoje.getMonth() + 1) - 1;
+  const ano = Number(dados.get("ano") ?? hoje.getFullYear());
+  const diaDoVencimento = Number(dados.get("dia") ?? 10);
+
+  const inicio = new Date(ano, mes, 1);
+  const fim = new Date(ano, mes + 1, 0, 23, 59, 59);
+
+  const contratos = await db.contract.findMany({
+    where: {
+      status: "ATIVO",
+      startDate: { lte: fim },
+      OR: [{ endDate: null }, { endDate: { gte: inicio } }],
+    },
+  });
+
+  const jaLancadas = await db.receivable.findMany({
+    where: { contractId: { not: null }, dueDate: { gte: inicio, lte: fim } },
+    select: { contractId: true },
+  });
+  const jaTem = new Set(jaLancadas.map((r) => r.contractId));
+
+  const novas = contratos
+    .filter((c) => !jaTem.has(c.id))
+    .map((c) => ({
+      description: `Mensalidade - ${c.title}`,
+      clientId: c.clientId,
+      contractId: c.id,
+      amount: c.monthlyValue,
+      dueDate: new Date(ano, mes, diaDoVencimento, 12),
+      status: "PENDENTE",
+    }));
+
+  if (novas.length > 0) await db.receivable.createMany({ data: novas });
+
+  atualizarTudo();
+  redirect(`/financeiro/receber?geradas=${novas.length}`);
 }
 
 export async function excluirCobranca(dados: FormData) {

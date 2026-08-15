@@ -3,6 +3,7 @@ import { resumoFinanceiro } from "@/lib/financeiro";
 import { date, money, monthLabel } from "@/lib/format";
 import { AbasFinanceiro } from "@/components/abas-financeiro";
 import { GraficoFinanceiro } from "@/components/grafico-financeiro";
+import { BotoesExportar } from "@/components/botoes-exportar";
 import { Card, PageHeader, Stat } from "@/components/ui";
 
 export const metadata = { title: "Financeiro — Move" };
@@ -19,6 +20,7 @@ export default async function FinanceiroPage() {
       <PageHeader
         title="Financeiro"
         subtitle={`Como está ${monthLabel(hoje.getMonth() + 1, hoje.getFullYear())}.`}
+        action={<BotoesExportar arquivo="/exportar/financeiro" />}
       />
 
       <AbasFinanceiro />

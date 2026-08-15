@@ -22,3 +22,33 @@ body {
 * {
   scrollbar-width: thin;
 }
+
+/* Ao imprimir (ou salvar em PDF): só o conteúdo, sem menu nem botões. */
+@media print {
+  aside,
+  header,
+  nav,
+  form,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  table {
+    font-size: 11px;
+  }
+
+  /* Não corta uma linha da tabela no meio da página. */
+  tr,
+  .rounded-xl {
+    break-inside: avoid;
+  }
+}
