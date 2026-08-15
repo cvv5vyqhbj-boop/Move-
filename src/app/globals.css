@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Tema claro: fundo claro, texto escuro, laranja da Move como destaque. */
+@theme {
+  --color-marca-50: #fff4ed;
+  --color-marca-100: #ffe6d5;
+  --color-marca-200: #fecaa9;
+  --color-marca-500: #f26522;
+  --color-marca-600: #e04e0c;
+  --color-marca-700: #b93d0d;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body {
+  background: #f6f7f9;
+  color: #1a1d21;
+}
+
+/* Deixa qualquer área rolável com barra discreta. */
+* {
+  scrollbar-width: thin;
+}

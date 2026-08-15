@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Pessoas da equipe
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String // ADMIN | EDICAO | SOCIAL | TRAFEGO | DESIGN | COPY | FILMAGEM
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  demands Demand[] @relation("Responsavel")
+  goals   Goal[]
+}
+
+// ---------------------------------------------------------------------------
+// Clientes e contratos
+// ---------------------------------------------------------------------------
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  company     String?
+  contactName String?
+  email       String?
+  phone       String?
+  startDate   DateTime // cliente desde
+  status      String   @default("ATIVO") // ATIVO | PAUSADO | ENCERRADO
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  contracts   Contract[]
+  demands     Demand[]
+  receivables Receivable[]
+}
+
+model Contract {
+  id           String    @id @default(cuid())
+  clientId     String
+  title        String
+  monthlyValue Float
+  startDate    DateTime
+  endDate      DateTime?
+  status       String    @default("ATIVO") // ATIVO | ENCERRADO
+  notes        String?
+  createdAt    DateTime  @default(now())
+
+  client      Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  receivables Receivable[]
+}
+
+// ---------------------------------------------------------------------------
+// Demandas (usadas na lista e no kanban)
+// ---------------------------------------------------------------------------
+
+model Demand {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  clientId    String?
+  area        String // EDICAO | SOCIAL | TRAFEGO | DESIGN | COPY | FILMAGEM
+  assigneeId  String?
+  status      String    @default("A_FAZER") // BACKLOG | A_FAZER | EM_ANDAMENTO | REVISAO | CONCLUIDO
+  priority    String    @default("MEDIA") // BAIXA | MEDIA | ALTA
+  dueDate     DateTime?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  assignee User?   @relation("Responsavel", fields: [assigneeId], references: [id], onDelete: SetNull)
+}
+
+// ---------------------------------------------------------------------------
+// Financeiro
+// ---------------------------------------------------------------------------
+
+model Payable {
+  id          String    @id @default(cuid())
+  description String
+  supplier    String?
+  category    String? // Ex.: Software, Equipe, Impostos
+  amount      Float
+  dueDate     DateTime
+  status      String    @default("PENDENTE") // PENDENTE | PAGO
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model Receivable {
+  id          String    @id @default(cuid())
+  description String
+  clientId    String?
+  contractId  String?
+  amount      Float
+  dueDate     DateTime
+  status      String    @default("PENDENTE") // PENDENTE | RECEBIDO
+  receivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  client   Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  contract Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+}
+
+// ---------------------------------------------------------------------------
+// Metas e objetivos do mes
+// ---------------------------------------------------------------------------
+
+model Goal {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  scope        String   @default("PESSOAL") // PESSOAL | EQUIPE | AGENCIA
+  ownerId      String?
+  area         String?
+  month        Int
+  year         Int
+  targetValue  Float    @default(1)
+  currentValue Float    @default(0)
+  unit         String   @default("un") // un | R$ | %
+  createdAt    DateTime @default(now())
+
+  owner User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+}
