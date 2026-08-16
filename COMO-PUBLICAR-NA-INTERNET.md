@@ -24,33 +24,44 @@ Reserve uns 30 minutos. São duas peças:
 3. Clique em **New project**
 4. Preencha:
    - **Name**: `move`
-   - **Database Password**: crie uma senha forte e **guarde num lugar seguro**
-     — você vai precisar dela daqui a pouco, e ela não aparece de novo
+   - **Database Password**: crie uma senha forte e **anote agora**, num bloco de
+     notas. Essa senha **não aparece de novo** e você vai colar ela daqui a pouco
    - **Region**: escolha **South America (São Paulo)** — o sistema fica mais
      rápido para quem está no Brasil
 5. Clique em **Create new project** e espere uns 2 minutos
 
 ### 1.2 Copiar os dois endereços de conexão
 
-No menu do projeto, vá em **Project Settings** (a engrenagem) → **Database** →
-seção **Connection string**.
+No topo do painel do projeto tem um botão **Connect**. Clique nele.
+
+*(Se não achar o botão, o mesmo conteúdo está em **Project Settings** → **Database**
+→ seção **Connection string**.)*
 
 Você vai copiar **dois** endereços diferentes:
 
-- Aba **Transaction pooler** (termina com `:6543/postgres`) → guarde como
-  **DATABASE_URL**
-- Aba **Direct connection** (termina com `:5432/postgres`) → guarde como
-  **DIRECT_URL**
+| No Supabase aparece como | Guarde como | Termina em |
+| --- | --- | --- |
+| **Transaction pooler** | `DATABASE_URL` | `:6543/postgres` |
+| **Direct connection** | `DIRECT_URL` | `:5432/postgres` |
 
-> Nos dois, troque `[YOUR-PASSWORD]` pela senha do banco que você criou no passo
-> anterior. Os colchetes saem também.
+> ⚠️ **Nos dois, troque `[YOUR-PASSWORD]` pela senha do banco** que você anotou no
+> passo anterior — os colchetes saem junto. **É o erro que mais trava gente aqui.**
 
 ### 1.3 Copiar as chaves da tela ao vivo
 
-Ainda em **Project Settings**, vá em **API** e copie:
+No menu lateral, vá em **Settings** → **API Keys** e copie:
 
-- **Project URL** → guarde como **NEXT_PUBLIC_SUPABASE_URL**
-- A chave **anon public** → guarde como **NEXT_PUBLIC_SUPABASE_ANON_KEY**
+- **Project URL** → guarde como `NEXT_PUBLIC_SUPABASE_URL`
+- A **chave pública** → guarde como `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+Sobre a chave pública: o Supabase está trocando o nome dela, então você vai ver
+**uma** destas duas:
+
+- **Publishable key** (começa com `sb_publishable_`) — o nome novo
+- **anon public** (um texto bem longo) — o nome antigo
+
+**Qualquer uma das duas funciona.** Se aparecerem as duas, pegue a **Publishable
+key**: as antigas serão desativadas até o fim de 2026.
 
 > São essas duas que fazem a tela de todo mundo se atualizar na hora, sem F5.
 > Se você pular esta parte, o sistema continua funcionando — só passa a

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma migrate deploy && next build",
+    "build": "node scripts/conferir-ambiente.mjs && prisma migrate deploy && next build",
     "start": "next start",
     "seed": "tsx prisma/seed.ts",
     "criar-admin": "tsx scripts/criar-admin.ts",
