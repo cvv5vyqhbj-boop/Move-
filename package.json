@@ -5,7 +5,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "criar-admin": "tsx scripts/criar-admin.ts"
   },
   "repository": {
     "type": "git",
