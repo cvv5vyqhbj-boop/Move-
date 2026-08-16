@@ -47,22 +47,41 @@ echo ""
 npm install --no-audit --no-fund
 
 # ---------------------------------------------------------------------------
-# 3. Chave de segurança própria desta máquina
+# 3. Onde ficam os dados (banco no Supabase)
 # ---------------------------------------------------------------------------
-# A chave que vem junto com os arquivos é de teste, igual em qualquer cópia.
-# Aqui geramos uma só sua, para ninguém conseguir forjar um login.
-if [ ! -f .env ] || grep -q "move-chave-de-desenvolvimento" .env 2>/dev/null; then
+# O sistema guarda tudo num banco na internet (Supabase), o mesmo usado pelo
+# site publicado. Aqui pedimos os dois endereços de conexão, uma vez só.
+if [ ! -f .env ]; then
+  echo ""
+  echo "-----------------------------------------------"
+  echo "   Conexão com o banco de dados"
+  echo "-----------------------------------------------"
+  echo ""
+  echo "No painel do Supabase, vá em Project Settings > Database e copie os"
+  echo "dois endereços de conexão (troque [YOUR-PASSWORD] pela sua senha):"
+  echo ""
+
+  while [ -z "$BANCO_POOL" ]; do
+    read -r -p "Cole o 'Transaction pooler' (porta 6543): " BANCO_POOL
+  done
+
+  while [ -z "$BANCO_DIRETO" ]; do
+    read -r -p "Cole o 'Direct connection' (porta 5432): " BANCO_DIRETO
+  done
+
   echo ""
   echo "Criando a chave de segurança deste computador..."
   CHAVE=$(openssl rand -hex 32)
+
   cat > .env <<ARQUIVO
-# Banco de dados (arquivo local, nao precisa instalar nada)
-DATABASE_URL="file:./dev.db"
+# Banco de dados no Supabase
+DATABASE_URL="$BANCO_POOL"
+DIRECT_URL="$BANCO_DIRETO"
 
 # Chave que assina o login deste computador. Nao compartilhe.
 SESSION_SECRET="$CHAVE"
 ARQUIVO
-  echo "Chave criada."
+  echo "Pronto."
 fi
 
 # ---------------------------------------------------------------------------

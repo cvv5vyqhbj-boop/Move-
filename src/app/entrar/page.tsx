@@ -1,8 +1,17 @@
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
 import { FormularioEntrar } from "./formulario";
 
 export const metadata = { title: "Entrar — Move" };
 
-export default function EntrarPage() {
+export const dynamic = "force-dynamic";
+
+export default async function EntrarPage() {
+  // Sistema recém-publicado, sem ninguém cadastrado: leva direto para a tela
+  // que cria o primeiro acesso.
+  const quantasPessoas = await db.user.count();
+  if (quantasPessoas === 0) redirect("/primeiro-acesso");
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-sm">

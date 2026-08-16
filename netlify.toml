@@ -1,0 +1,17 @@
+# Configuração da publicação na Netlify.
+#
+# A Netlify lê este arquivo sozinha ao criar o site a partir do GitHub.
+# As senhas (banco e chave de login) NÃO ficam aqui — vão nas variáveis de
+# ambiente do painel da Netlify. Veja COMO-PUBLICAR-NA-INTERNET.md.
+
+[build]
+  # O "prisma migrate deploy" dentro do build cria as tabelas no Supabase
+  # na primeira publicação, sem precisar abrir terminal.
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

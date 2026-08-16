@@ -28,6 +28,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Roda em tudo, menos arquivos estaticos, a API de login e a pagina de aviso.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sem-acesso).*)"],
+  // Roda em tudo, menos arquivos estaticos, a API, a pagina de aviso e a tela
+  // de primeiro acesso (que se protege sozinha: so funciona com o banco vazio).
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|sem-acesso|primeiro-acesso).*)",
+  ],
 };

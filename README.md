@@ -3,10 +3,14 @@
 Sistema de gestão da agência: clientes, contratos, demandas, kanban, financeiro e
 metas do mês — com acesso separado por cargo.
 
-> **Vai instalar num Mac para usar de verdade?**
-> Siga o **[COMO-INSTALAR-NO-MAC.md](COMO-INSTALAR-NO-MAC.md)** — é o passo a
-> passo sem termos técnicos, com o sistema começando vazio e já com o seu
-> acesso de administrador. O resto deste arquivo é a parte técnica.
+> **Quer colocar o sistema no ar?**
+> Siga o **[COMO-PUBLICAR-NA-INTERNET.md](COMO-PUBLICAR-NA-INTERNET.md)** — passo
+> a passo sem termos técnicos, de graça, com banco no Supabase e o site na
+> Netlify. É o caminho principal.
+>
+> Para rodar também no seu Mac, apontando para o mesmo banco, veja o
+> [COMO-INSTALAR-NO-MAC.md](COMO-INSTALAR-NO-MAC.md). O resto deste arquivo é a
+> parte técnica.
 
 ---
 

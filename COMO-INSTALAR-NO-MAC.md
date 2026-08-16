@@ -1,5 +1,15 @@
 # Como instalar o sistema da Move no seu Mac
 
+> **Você provavelmente não precisa disto.**
+> O caminho principal agora é o sistema publicado na internet — veja
+> **[COMO-PUBLICAR-NA-INTERNET.md](COMO-PUBLICAR-NA-INTERNET.md)**. Lá o sistema
+> funciona de qualquer lugar, no celular e no computador, sem depender do seu
+> Mac estar ligado.
+>
+> Este guia serve só para rodar o sistema também na sua máquina, apontando para
+> o **mesmo banco de dados** do site publicado. Você vai precisar dos endereços
+> de conexão do Supabase para concluir.
+
 São **quatro passos**, e só o primeiro dá algum trabalho. Depois disso, usar o
 sistema é dar dois cliques num arquivo.
 

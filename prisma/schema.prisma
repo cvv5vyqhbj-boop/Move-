@@ -1,10 +1,19 @@
 generator client {
   provider = "prisma-client-js"
+
+  // O segundo alvo e o servidor da Netlify (Amazon Linux). Sem ele, o sistema
+  // sobe mas reclama de "binario nao encontrado" depois de publicado.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+
+  // Endereco normal do banco (o "pooler" do Supabase, porta 6543).
+  url = env("DATABASE_URL")
+
+  // Endereco direto (porta 5432). So e usado para criar/atualizar as tabelas.
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------------------------------------------------------------------
