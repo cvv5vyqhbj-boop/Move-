@@ -1,8 +1,16 @@
 import { salvarDemanda, excluirDemanda } from "@/app/actions/demandas";
 import { AREAS, PRIORITIES, STATUS } from "@/lib/constants";
 import { dateInput } from "@/lib/format";
-import { Button, Card, Field, Input, Select, Textarea } from "./ui";
-import { LinkButton } from "./ui";
+import {
+  Button,
+  Card,
+  Field,
+  FormSection,
+  Input,
+  LinkButton,
+  Select,
+  Textarea,
+} from "./ui";
 
 type Demanda = {
   id: string;
@@ -32,80 +40,102 @@ export function FormularioDemanda({
   return (
     <div className="space-y-4">
       <Card>
-        <form action={salvarDemanda} className="space-y-4">
+        <form action={salvarDemanda} className="space-y-8">
           {demanda && <input type="hidden" name="id" value={demanda.id} />}
 
-          <Field label="O que precisa ser feito?">
-            <Input
-              name="title"
-              defaultValue={demanda?.title}
-              placeholder="Ex.: Editar 4 Reels da semana"
-              required
-            />
-          </Field>
+          <FormSection
+            title="O que precisa ser feito"
+            subtitle="Título curto e detalhes para quem for executar."
+          >
+            <div className="space-y-4">
+              <Field label="Título">
+                <Input
+                  name="title"
+                  defaultValue={demanda?.title}
+                  placeholder="Ex.: Editar 4 Reels da semana"
+                  required
+                />
+              </Field>
 
-          <Field label="Detalhes" hint="Opcional. Combinados, links, referências.">
-            <Textarea
-              name="description"
-              rows={3}
-              defaultValue={demanda?.description ?? ""}
-              placeholder="Escreva aqui o que a pessoa precisa saber para fazer."
-            />
-          </Field>
+              <Field
+                label="Detalhes"
+                hint="Opcional. Combinados, links, referências."
+              >
+                <Textarea
+                  name="description"
+                  rows={4}
+                  defaultValue={demanda?.description ?? ""}
+                  placeholder="Escreva aqui o que a pessoa precisa saber para fazer."
+                />
+              </Field>
+            </div>
+          </FormSection>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Cliente">
-              <Select
-                name="clientId"
-                defaultValue={demanda?.clientId ?? ""}
-                placeholder="Sem cliente (interno)"
-                options={clientes.map((c) => ({ value: c.id, label: c.name }))}
-              />
-            </Field>
+          <FormSection
+            title="Para quem e quem faz"
+            subtitle="Cliente, área e responsável."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Cliente">
+                <Select
+                  name="clientId"
+                  defaultValue={demanda?.clientId ?? ""}
+                  placeholder="Sem cliente (interno)"
+                  options={clientes.map((c) => ({ value: c.id, label: c.name }))}
+                />
+              </Field>
 
-            <Field label="Área">
-              <Select
-                name="area"
-                defaultValue={demanda?.area ?? "EDICAO"}
-                options={opcoes(AREAS)}
-              />
-            </Field>
+              <Field label="Área">
+                <Select
+                  name="area"
+                  defaultValue={demanda?.area ?? "EDICAO"}
+                  options={opcoes(AREAS)}
+                />
+              </Field>
 
-            <Field label="Quem vai fazer">
-              <Select
-                name="assigneeId"
-                defaultValue={demanda?.assigneeId ?? ""}
-                placeholder="Ainda não definido"
-                options={pessoas.map((p) => ({ value: p.id, label: p.name }))}
-              />
-            </Field>
+              <Field label="Quem vai fazer">
+                <Select
+                  name="assigneeId"
+                  defaultValue={demanda?.assigneeId ?? ""}
+                  placeholder="Ainda não definido"
+                  options={pessoas.map((p) => ({ value: p.id, label: p.name }))}
+                />
+              </Field>
 
-            <Field label="Situação">
-              <Select
-                name="status"
-                defaultValue={demanda?.status ?? "A_FAZER"}
-                options={opcoes(STATUS)}
-              />
-            </Field>
+              <Field label="Prazo de entrega">
+                <Input
+                  name="dueDate"
+                  type="date"
+                  defaultValue={dateInput(demanda?.dueDate)}
+                />
+              </Field>
+            </div>
+          </FormSection>
 
-            <Field label="Prioridade">
-              <Select
-                name="priority"
-                defaultValue={demanda?.priority ?? "MEDIA"}
-                options={opcoes(PRIORITIES)}
-              />
-            </Field>
+          <FormSection
+            title="Situação"
+            subtitle="Como está agora e a prioridade dela."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Situação">
+                <Select
+                  name="status"
+                  defaultValue={demanda?.status ?? "A_FAZER"}
+                  options={opcoes(STATUS)}
+                />
+              </Field>
 
-            <Field label="Prazo de entrega">
-              <Input
-                name="dueDate"
-                type="date"
-                defaultValue={dateInput(demanda?.dueDate)}
-              />
-            </Field>
-          </div>
+              <Field label="Prioridade">
+                <Select
+                  name="priority"
+                  defaultValue={demanda?.priority ?? "MEDIA"}
+                  options={opcoes(PRIORITIES)}
+                />
+              </Field>
+            </div>
+          </FormSection>
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-5">
             <Button type="submit">
               {demanda ? "Salvar alterações" : "Criar demanda"}
             </Button>

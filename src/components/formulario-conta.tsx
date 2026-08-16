@@ -1,6 +1,14 @@
 import { excluirConta, salvarConta } from "@/app/actions/financeiro";
 import { dateInput } from "@/lib/format";
-import { Button, Card, Field, Input, LinkButton, Select } from "./ui";
+import {
+  Button,
+  Card,
+  Field,
+  FormSection,
+  Input,
+  LinkButton,
+  Select,
+} from "./ui";
 
 type ContaEditavel = {
   id: string;
@@ -24,59 +32,90 @@ export function FormularioConta({
   return (
     <div className="space-y-4">
       <Card>
-        <form action={salvarConta} className="space-y-4">
+        <form action={salvarConta} className="space-y-8">
           {conta && <input type="hidden" name="id" value={conta.id} />}
 
-          <Field label="O que é essa conta?">
-            <Input
-              name="description"
-              defaultValue={conta?.description}
-              placeholder="Ex.: Aluguel do estúdio"
-              required
-            />
-          </Field>
+          <FormSection
+            title="A conta"
+            subtitle="O que se está pagando e para quem."
+          >
+            <div className="space-y-4">
+              <Field label="O que é essa conta?">
+                <Input
+                  name="description"
+                  defaultValue={conta?.description}
+                  placeholder="Ex.: Aluguel do estúdio"
+                  required
+                />
+              </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Para quem se paga">
-              <Input
-                name="supplier"
-                defaultValue={conta?.supplier ?? ""}
-                placeholder="Fornecedor, pessoa ou empresa"
-              />
-            </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Para quem se paga">
+                  <Input
+                    name="supplier"
+                    defaultValue={conta?.supplier ?? ""}
+                    placeholder="Fornecedor, pessoa ou empresa"
+                  />
+                </Field>
 
-            <Field label="Tipo de gasto">
-              <Input
-                name="category"
-                defaultValue={conta?.category ?? ""}
-                placeholder="Ex.: Software, Equipe, Impostos"
-              />
-            </Field>
+                <Field label="Tipo de gasto">
+                  <Input
+                    name="category"
+                    defaultValue={conta?.category ?? ""}
+                    placeholder="Ex.: Software, Equipe, Impostos"
+                  />
+                </Field>
+              </div>
+            </div>
+          </FormSection>
 
-            <Field label="Valor (R$)">
-              <Input
-                name="amount"
-                type="number"
-                step="0.01"
-                min={0}
-                defaultValue={conta?.amount ?? ""}
-                placeholder="0,00"
-                required
-              />
-            </Field>
+          <FormSection
+            title="Valor e prazo"
+            subtitle="Quanto e quando vence."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Valor (R$)">
+                <Input
+                  name="amount"
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  defaultValue={conta?.amount ?? ""}
+                  placeholder="0,00"
+                  inputMode="decimal"
+                  required
+                />
+              </Field>
 
-            <Field label="Vence em">
-              <Input
-                name="dueDate"
-                type="date"
-                defaultValue={dateInput(conta?.dueDate ?? new Date())}
-                required
-              />
-            </Field>
+              <Field label="Vence em">
+                <Input
+                  name="dueDate"
+                  type="date"
+                  defaultValue={dateInput(conta?.dueDate ?? new Date())}
+                  required
+                />
+              </Field>
 
+              <Field label="Situação">
+                <Select
+                  name="status"
+                  defaultValue={conta?.status ?? "PENDENTE"}
+                  options={[
+                    { value: "PENDENTE", label: "Ainda não paguei" },
+                    { value: "PAGO", label: "Já está paga" },
+                  ]}
+                />
+              </Field>
+            </div>
+          </FormSection>
+
+          <FormSection
+            title="Lucro por cliente"
+            subtitle="Marque um cliente só se esse gasto é dele — assim ele entra no cálculo do que sobra."
+          >
             <Field
               label="Gasto de qual cliente"
-              hint="Só se for um custo daquele cliente (freela, diária, impulsionamento). Isso entra no cálculo do lucro por cliente."
+              hint="Ex.: freela, diária de filmagem, impulsionamento de posts."
             >
               <Select
                 name="clientId"
@@ -85,20 +124,9 @@ export function FormularioConta({
                 options={clientes.map((c) => ({ value: c.id, label: c.name }))}
               />
             </Field>
+          </FormSection>
 
-            <Field label="Situação">
-              <Select
-                name="status"
-                defaultValue={conta?.status ?? "PENDENTE"}
-                options={[
-                  { value: "PENDENTE", label: "Ainda não paguei" },
-                  { value: "PAGO", label: "Já está paga" },
-                ]}
-              />
-            </Field>
-          </div>
-
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-5">
             <Button type="submit">
               {conta ? "Salvar alterações" : "Lançar conta"}
             </Button>

@@ -1,7 +1,15 @@
 import { excluirPessoa, salvarPessoa } from "@/app/actions/equipe";
 import { ROLES } from "@/lib/constants";
 import { ROLE_MODULES, MODULES } from "@/lib/permissions";
-import { Button, Card, Field, Input, LinkButton, Select } from "./ui";
+import {
+  Button,
+  Card,
+  Field,
+  FormSection,
+  Input,
+  LinkButton,
+  Select,
+} from "./ui";
 
 type PessoaEditavel = {
   id: string;
@@ -21,59 +29,76 @@ export function FormularioPessoa({
   return (
     <div className="space-y-4">
       <Card>
-        <form action={salvarPessoa} className="space-y-4">
+        <form action={salvarPessoa} className="space-y-8">
           {pessoa && <input type="hidden" name="id" value={pessoa.id} />}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Nome">
-              <Input name="name" defaultValue={pessoa?.name} required />
-            </Field>
-
-            <Field label="E-mail" hint="É com ele que a pessoa entra no sistema.">
-              <Input
-                name="email"
-                type="email"
-                defaultValue={pessoa?.email}
-                placeholder="nome@move.com"
-                required
-              />
-            </Field>
-
-            <Field label="Cargo" hint="O cargo decide o que a pessoa pode ver.">
-              <Select
-                name="role"
-                defaultValue={pessoa?.role ?? "EDICAO"}
-                options={Object.entries(ROLES).map(([value, label]) => ({
-                  value,
-                  label,
-                }))}
-              />
-            </Field>
-
-            <Field label="Acesso">
-              <Select
-                name="active"
-                defaultValue={pessoa?.active === false ? "0" : "1"}
-                options={[
-                  { value: "1", label: "Pode entrar no sistema" },
-                  { value: "0", label: "Acesso bloqueado" },
-                ]}
-              />
-            </Field>
-          </div>
-
-          <Field
-            label={pessoa ? "Nova senha" : "Senha"}
-            hint={
-              pessoa
-                ? "Deixe vazio para manter a senha atual."
-                : "Se deixar vazio, a senha será move123."
-            }
+          <FormSection
+            title="Quem é"
+            subtitle="Nome e e-mail que a pessoa usa para entrar."
           >
-            <Input name="senha" type="password" placeholder="••••••" />
-          </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Nome">
+                <Input name="name" defaultValue={pessoa?.name} required />
+              </Field>
 
-          <div className="flex gap-2 pt-2">
+              <Field
+                label="E-mail"
+                hint="É com ele que a pessoa entra no sistema."
+              >
+                <Input
+                  name="email"
+                  type="email"
+                  defaultValue={pessoa?.email}
+                  placeholder="nome@move.com"
+                  required
+                />
+              </Field>
+            </div>
+          </FormSection>
+
+          <FormSection
+            title="Acesso"
+            subtitle="Cargo (define o que ela pode ver) e se pode entrar."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Cargo">
+                <Select
+                  name="role"
+                  defaultValue={pessoa?.role ?? "EDICAO"}
+                  options={Object.entries(ROLES).map(([value, label]) => ({
+                    value,
+                    label,
+                  }))}
+                />
+              </Field>
+
+              <Field label="Situação">
+                <Select
+                  name="active"
+                  defaultValue={pessoa?.active === false ? "0" : "1"}
+                  options={[
+                    { value: "1", label: "Pode entrar no sistema" },
+                    { value: "0", label: "Acesso bloqueado" },
+                  ]}
+                />
+              </Field>
+            </div>
+          </FormSection>
+
+          <FormSection title="Senha">
+            <Field
+              label={pessoa ? "Nova senha" : "Senha inicial"}
+              hint={
+                pessoa
+                  ? "Deixe vazio para manter a senha atual."
+                  : "Se deixar vazio, a senha será move123."
+              }
+            >
+              <Input name="senha" type="password" placeholder="••••••" />
+            </Field>
+          </FormSection>
+
+          <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-5">
             <Button type="submit">
               {pessoa ? "Salvar alterações" : "Adicionar à equipe"}
             </Button>

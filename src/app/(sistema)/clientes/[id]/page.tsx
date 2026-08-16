@@ -3,11 +3,7 @@ import { notFound } from "next/navigation";
 import { requireModule } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { date, money, timeSince } from "@/lib/format";
-import {
-  EtiquetaCliente,
-  EtiquetaPagamento,
-  EtiquetaStatus,
-} from "@/components/etiquetas";
+import { EtiquetaCliente, EtiquetaStatus } from "@/components/etiquetas";
 import {
   Badge,
   Card,
@@ -40,19 +36,19 @@ export default async function ClientePage({
         orderBy: { createdAt: "desc" },
         take: 10,
       },
-      receivables: { orderBy: { dueDate: "desc" }, take: 10 },
     },
   });
 
   if (!cliente) notFound();
 
-  const mensal = cliente.contracts
+  // Se a Alyson digitou "quanto paga" no cadastro, esse valor manda. Caso
+  // contrario, somamos os contratos ativos (comportamento antigo).
+  const somaContratos = cliente.contracts
     .filter((c) => c.status === "ATIVO")
     .reduce((s, c) => s + c.monthlyValue, 0);
-
-  const jaRecebido = cliente.receivables
-    .filter((r) => r.status === "RECEBIDO")
-    .reduce((s, r) => s + r.amount, 0);
+  const mensal = cliente.monthlyFee ?? somaContratos;
+  const origemMensal =
+    cliente.monthlyFee != null ? "Valor combinado" : "Soma dos contratos ativos";
 
   const abertas = cliente.demands.filter((d) => d.status !== "CONCLUIDO").length;
 
@@ -68,11 +64,23 @@ export default async function ClientePage({
         }
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Tempo de casa" value={timeSince(cliente.startDate)} hint={`Desde ${date(cliente.startDate)}`} />
-        <Stat label="Por mês" value={mensal > 0 ? money(mensal) : "—"} hint="Contratos ativos" tone="positivo" />
-        <Stat label="Já recebido" value={money(jaRecebido)} hint="Últimos lançamentos" />
-        <Stat label="Demandas abertas" value={String(abertas)} tone={abertas > 0 ? "atencao" : "neutro"} />
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <Stat
+          label="Tempo de casa"
+          value={timeSince(cliente.startDate)}
+          hint={`Desde ${date(cliente.startDate)}`}
+        />
+        <Stat
+          label="Paga por mês"
+          value={mensal > 0 ? money(mensal) : "—"}
+          hint={mensal > 0 ? origemMensal : "Ainda não informado"}
+          tone="positivo"
+        />
+        <Stat
+          label="Demandas abertas"
+          value={String(abertas)}
+          tone={abertas > 0 ? "atencao" : "neutro"}
+        />
       </div>
 
       <div className="mb-6 grid gap-4 lg:grid-cols-2">
@@ -145,54 +153,28 @@ export default async function ClientePage({
       </div>
 
       <h2 className="mb-3 font-semibold text-slate-900">Últimas demandas</h2>
-      <div className="mb-6">
-        <Table>
-          <THead columns={["Demanda", "Quem faz", "Prazo", "Situação"]} />
-          <tbody>
-            {cliente.demands.length === 0 && (
-              <EmptyRow colSpan={4}>Nenhuma demanda para este cliente.</EmptyRow>
-            )}
-            {cliente.demands.map((d) => (
-              <TRow key={d.id}>
-                <TCell>
-                  <Link
-                    href={`/demandas/${d.id}`}
-                    className="font-medium text-slate-900 hover:text-marca-600"
-                  >
-                    {d.title}
-                  </Link>
-                </TCell>
-                <TCell className="text-slate-600">
-                  {d.assignee?.name ?? "Sem responsável"}
-                </TCell>
-                <TCell className="text-slate-600">{date(d.dueDate)}</TCell>
-                <TCell>
-                  <EtiquetaStatus status={d.status} />
-                </TCell>
-              </TRow>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-
-      <h2 className="mb-3 font-semibold text-slate-900">Últimos pagamentos</h2>
       <Table>
-        <THead columns={["Descrição", "Valor", "Vencimento", "Situação"]} />
+        <THead columns={["Demanda", "Quem faz", "Prazo", "Situação"]} />
         <tbody>
-          {cliente.receivables.length === 0 && (
-            <EmptyRow colSpan={4}>Nenhuma cobrança lançada.</EmptyRow>
+          {cliente.demands.length === 0 && (
+            <EmptyRow colSpan={4}>Nenhuma demanda para este cliente.</EmptyRow>
           )}
-          {cliente.receivables.map((r) => (
-            <TRow key={r.id}>
-              <TCell className="text-slate-800">{r.description}</TCell>
-              <TCell className="font-medium">{money(r.amount)}</TCell>
-              <TCell className="text-slate-600">{date(r.dueDate)}</TCell>
+          {cliente.demands.map((d) => (
+            <TRow key={d.id}>
               <TCell>
-                <EtiquetaPagamento
-                  status={r.status}
-                  dueDate={r.dueDate}
-                  pagoLabel="Recebido"
-                />
+                <Link
+                  href={`/demandas/${d.id}`}
+                  className="font-medium text-slate-900 hover:text-marca-600"
+                >
+                  {d.title}
+                </Link>
+              </TCell>
+              <TCell className="text-slate-600">
+                {d.assignee?.name ?? "Sem responsável"}
+              </TCell>
+              <TCell className="text-slate-600">{date(d.dueDate)}</TCell>
+              <TCell>
+                <EtiquetaStatus status={d.status} />
               </TCell>
             </TRow>
           ))}

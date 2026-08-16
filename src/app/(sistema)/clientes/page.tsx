@@ -47,11 +47,16 @@ export default async function ClientesPage({
     }),
   ]);
 
+  // "Quanto o cliente paga": se ele tem um valor combinado no cadastro, esse
+  // valor manda. Se nao, cai na soma dos contratos ativos.
+  const mensalDoCliente = (c: (typeof todos)[number]) =>
+    c.monthlyFee ??
+    c.contracts
+      .filter((k) => k.status === "ATIVO")
+      .reduce((s, k) => s + k.monthlyValue, 0);
+
   const ativos = todos.filter((c) => c.status === "ATIVO");
-  const receitaMensal = todos
-    .flatMap((c) => c.contracts)
-    .filter((c) => c.status === "ATIVO")
-    .reduce((soma, c) => soma + c.monthlyValue, 0);
+  const receitaMensal = ativos.reduce((s, c) => s + mensalDoCliente(c), 0);
 
   return (
     <>
@@ -66,7 +71,7 @@ export default async function ClientesPage({
         <Stat
           label="Receita fixa por mês"
           value={money(receitaMensal)}
-          hint="Soma dos contratos ativos"
+          hint="Somando o que cada cliente ativo paga"
           tone="positivo"
         />
         <Stat
@@ -114,9 +119,7 @@ export default async function ClientesPage({
             </EmptyRow>
           )}
           {clientes.map((c) => {
-            const mensal = c.contracts
-              .filter((k) => k.status === "ATIVO")
-              .reduce((s, k) => s + k.monthlyValue, 0);
+            const mensal = mensalDoCliente(c);
             const abertas = c.demands.filter(
               (d) => d.status !== "CONCLUIDO",
             ).length;

@@ -47,6 +47,7 @@ model Client {
   phone       String?
   startDate   DateTime // cliente desde
   status      String   @default("ATIVO") // ATIVO | PAUSADO | ENCERRADO
+  monthlyFee  Float? // quanto o cliente paga por mes (opcional; substitui a soma dos contratos)
   notes       String?
   createdAt   DateTime @default(now())
 

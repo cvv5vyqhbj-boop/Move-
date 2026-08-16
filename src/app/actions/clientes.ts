@@ -21,6 +21,12 @@ export async function salvarCliente(dados: FormData) {
     phone: texto(dados, "phone"),
     startDate: new Date(String(dados.get("startDate") || new Date().toISOString())),
     status: String(dados.get("status") ?? "ATIVO"),
+    monthlyFee: (() => {
+      const bruto = String(dados.get("monthlyFee") ?? "").trim();
+      if (!bruto) return null;
+      const n = Number(bruto.replace(",", "."));
+      return Number.isFinite(n) && n > 0 ? n : null;
+    })(),
     notes: texto(dados, "notes"),
   };
 
