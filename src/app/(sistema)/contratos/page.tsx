@@ -1,7 +1,8 @@
-import Link from "next/link";
+import { FileText } from "lucide-react";
 import { requireModule } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { date, money, timeSince } from "@/lib/format";
+import { LinhaClicavel } from "@/components/linha-clicavel";
 import {
   Badge,
   EmptyRow,
@@ -10,7 +11,6 @@ import {
   Stat,
   TCell,
   THead,
-  TRow,
   Table,
 } from "@/components/ui";
 
@@ -56,33 +56,24 @@ export default async function ContratosPage() {
             "Início",
             "Tempo",
             "Fim",
+            "PDF",
             "Situação",
           ]}
         />
         <tbody>
           {contratos.length === 0 && (
-            <EmptyRow colSpan={7}>
+            <EmptyRow colSpan={8}>
               Nenhum contrato cadastrado. Clique em “+ Novo contrato”.
             </EmptyRow>
           )}
           {contratos.map((c) => (
-            <TRow key={c.id}>
+            <LinhaClicavel key={c.id} href={`/contratos/${c.id}`}>
               <TCell>
-                <Link
-                  href={`/clientes/${c.clientId}`}
-                  className="font-medium text-slate-900 hover:text-marca-600"
-                >
+                <span className="font-medium text-slate-900">
                   {c.client.name}
-                </Link>
+                </span>
               </TCell>
-              <TCell>
-                <Link
-                  href={`/contratos/${c.id}`}
-                  className="text-slate-700 hover:text-marca-600"
-                >
-                  {c.title}
-                </Link>
-              </TCell>
+              <TCell className="text-slate-700">{c.title}</TCell>
               <TCell className="font-medium whitespace-nowrap">
                 {money(c.monthlyValue)}
               </TCell>
@@ -96,11 +87,27 @@ export default async function ContratosPage() {
                 {c.endDate ? date(c.endDate) : "Sem prazo"}
               </TCell>
               <TCell>
+                {c.pdfUrl ? (
+                  <a
+                    href={c.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-marca-600 hover:text-marca-700 hover:underline"
+                    title="Abrir contrato em uma nova aba"
+                  >
+                    <FileText size={14} />
+                    Abrir
+                  </a>
+                ) : (
+                  <span className="text-xs text-slate-400">—</span>
+                )}
+              </TCell>
+              <TCell>
                 <Badge tone={c.status === "ATIVO" ? "verde" : "cinza"}>
                   {c.status === "ATIVO" ? "Ativo" : "Encerrado"}
                 </Badge>
               </TCell>
-            </TRow>
+            </LinhaClicavel>
           ))}
         </tbody>
       </Table>

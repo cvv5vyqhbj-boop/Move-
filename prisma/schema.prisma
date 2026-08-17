@@ -65,6 +65,8 @@ model Contract {
   startDate    DateTime
   endDate      DateTime?
   status       String    @default("ATIVO") // ATIVO | ENCERRADO
+  // Link do contrato assinado (Drive, Docs, PDF em nuvem).
+  pdfUrl       String?
   notes        String?
   createdAt    DateTime  @default(now())
 
@@ -85,6 +87,9 @@ model Demand {
   assigneeId  String?
   status      String    @default("A_FAZER") // BACKLOG | A_FAZER | EM_ANDAMENTO | REVISAO | CONCLUIDO
   priority    String    @default("MEDIA") // BAIXA | MEDIA | ALTA
+  // Prazo que a equipe combinou internamente (data-alvo interna, antes do cliente).
+  internalDueDate DateTime?
+  // Prazo que foi combinado com o cliente (data-alvo externa).
   dueDate     DateTime?
   order       Int       @default(0)
   createdAt   DateTime  @default(now())

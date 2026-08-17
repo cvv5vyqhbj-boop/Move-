@@ -1,9 +1,10 @@
-import Link from "next/link";
+import { FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { requireModule } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { date, money, timeSince } from "@/lib/format";
 import { EtiquetaCliente, EtiquetaStatus } from "@/components/etiquetas";
+import { LinhaClicavel } from "@/components/linha-clicavel";
 import {
   Badge,
   Card,
@@ -13,7 +14,6 @@ import {
   Stat,
   TCell,
   THead,
-  TRow,
   Table,
 } from "@/components/ui";
 
@@ -119,22 +119,26 @@ export default async function ClientePage({
       <h2 className="mb-3 font-semibold text-slate-900">Contratos</h2>
       <div className="mb-6">
         <Table>
-          <THead columns={["Contrato", "Valor mensal", "Início", "Fim", "Situação"]} />
+          <THead
+            columns={[
+              "Contrato",
+              "Valor mensal",
+              "Início",
+              "Fim",
+              "PDF",
+              "Situação",
+            ]}
+          />
           <tbody>
             {cliente.contracts.length === 0 && (
-              <EmptyRow colSpan={5}>
+              <EmptyRow colSpan={6}>
                 Este cliente ainda não tem contrato cadastrado.
               </EmptyRow>
             )}
             {cliente.contracts.map((c) => (
-              <TRow key={c.id}>
+              <LinhaClicavel key={c.id} href={`/contratos/${c.id}`}>
                 <TCell>
-                  <Link
-                    href={`/contratos/${c.id}`}
-                    className="font-medium text-slate-900 hover:text-marca-600"
-                  >
-                    {c.title}
-                  </Link>
+                  <span className="font-medium text-slate-900">{c.title}</span>
                 </TCell>
                 <TCell className="font-medium">{money(c.monthlyValue)}</TCell>
                 <TCell className="text-slate-600">{date(c.startDate)}</TCell>
@@ -142,11 +146,26 @@ export default async function ClientePage({
                   {c.endDate ? date(c.endDate) : "Sem data de fim"}
                 </TCell>
                 <TCell>
+                  {c.pdfUrl ? (
+                    <a
+                      href={c.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-marca-600 hover:text-marca-700 hover:underline"
+                    >
+                      <FileText size={14} />
+                      Abrir
+                    </a>
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </TCell>
+                <TCell>
                   <Badge tone={c.status === "ATIVO" ? "verde" : "cinza"}>
                     {c.status === "ATIVO" ? "Ativo" : "Encerrado"}
                   </Badge>
                 </TCell>
-              </TRow>
+              </LinhaClicavel>
             ))}
           </tbody>
         </Table>
@@ -160,14 +179,9 @@ export default async function ClientePage({
             <EmptyRow colSpan={4}>Nenhuma demanda para este cliente.</EmptyRow>
           )}
           {cliente.demands.map((d) => (
-            <TRow key={d.id}>
+            <LinhaClicavel key={d.id} href={`/demandas/${d.id}`}>
               <TCell>
-                <Link
-                  href={`/demandas/${d.id}`}
-                  className="font-medium text-slate-900 hover:text-marca-600"
-                >
-                  {d.title}
-                </Link>
+                <span className="font-medium text-slate-900">{d.title}</span>
               </TCell>
               <TCell className="text-slate-600">
                 {d.assignee?.name ?? "Sem responsável"}
@@ -176,7 +190,7 @@ export default async function ClientePage({
               <TCell>
                 <EtiquetaStatus status={d.status} />
               </TCell>
-            </TRow>
+            </LinhaClicavel>
           ))}
         </tbody>
       </Table>

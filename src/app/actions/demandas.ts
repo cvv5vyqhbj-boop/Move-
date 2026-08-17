@@ -16,6 +16,7 @@ export async function salvarDemanda(dados: FormData) {
 
   const id = texto(dados, "id");
   const prazo = texto(dados, "dueDate");
+  const prazoInterno = texto(dados, "internalDueDate");
 
   const valores = {
     title: String(dados.get("title") ?? "").trim(),
@@ -25,6 +26,7 @@ export async function salvarDemanda(dados: FormData) {
     assigneeId: texto(dados, "assigneeId"),
     status: String(dados.get("status") ?? "A_FAZER"),
     priority: String(dados.get("priority") ?? "MEDIA"),
+    internalDueDate: prazoInterno ? new Date(prazoInterno) : null,
     dueDate: prazo ? new Date(prazo) : null,
   };
 

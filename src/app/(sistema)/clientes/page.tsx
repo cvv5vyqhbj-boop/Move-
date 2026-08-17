@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { requireModule } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { date, money, timeSince } from "@/lib/format";
 import { EtiquetaCliente } from "@/components/etiquetas";
+import { LinhaClicavel } from "@/components/linha-clicavel";
 import {
   Button,
   EmptyRow,
@@ -12,7 +12,6 @@ import {
   Stat,
   TCell,
   THead,
-  TRow,
   Table,
 } from "@/components/ui";
 
@@ -125,14 +124,9 @@ export default async function ClientesPage({
             ).length;
 
             return (
-              <TRow key={c.id}>
+              <LinhaClicavel key={c.id} href={`/clientes/${c.id}`}>
                 <TCell>
-                  <Link
-                    href={`/clientes/${c.id}`}
-                    className="font-medium text-slate-900 hover:text-marca-600"
-                  >
-                    {c.name}
-                  </Link>
+                  <span className="font-medium text-slate-900">{c.name}</span>
                   {c.company && (
                     <span className="block text-xs text-slate-400">
                       {c.company}
@@ -160,7 +154,7 @@ export default async function ClientesPage({
                 <TCell>
                   <EtiquetaCliente status={c.status} />
                 </TCell>
-              </TRow>
+              </LinhaClicavel>
             );
           })}
         </tbody>

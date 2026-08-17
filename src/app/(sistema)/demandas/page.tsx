@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { requireModule } from "@/lib/auth";
+import { LinhaClicavel } from "@/components/linha-clicavel";
 import { db } from "@/lib/db";
 import { filtroDeVisibilidade } from "@/lib/demandas";
 import { AREAS, ROLE_AREA, STATUS } from "@/lib/constants";
@@ -18,7 +18,6 @@ import {
   Select,
   TCell,
   THead,
-  TRow,
   Table,
 } from "@/components/ui";
 
@@ -146,14 +145,9 @@ export default async function DemandasPage({
             </EmptyRow>
           )}
           {demandas.map((d) => (
-            <TRow key={d.id}>
+            <LinhaClicavel key={d.id} href={`/demandas/${d.id}`}>
               <TCell>
-                <Link
-                  href={`/demandas/${d.id}`}
-                  className="font-medium text-slate-900 hover:text-marca-600"
-                >
-                  {d.title}
-                </Link>
+                <span className="font-medium text-slate-900">{d.title}</span>
               </TCell>
               <TCell className="text-slate-600">
                 {d.client?.name ?? "Interno"}
@@ -165,9 +159,24 @@ export default async function DemandasPage({
                 {d.assignee?.name ?? "Sem responsável"}
               </TCell>
               <TCell className="whitespace-nowrap">
+                {d.internalDueDate && (
+                  <span
+                    className={
+                      d.status !== "CONCLUIDO" &&
+                      new Date(d.internalDueDate) < new Date()
+                        ? "block text-xs text-rose-600"
+                        : "block text-xs text-slate-400"
+                    }
+                    title="Prazo interno"
+                  >
+                    interno {date(d.internalDueDate)}
+                  </span>
+                )}
                 {d.dueDate ? (
                   <>
-                    <span className="text-slate-700">{date(d.dueDate)}</span>
+                    <span className="text-slate-700" title="Prazo com o cliente">
+                      cliente {date(d.dueDate)}
+                    </span>
                     {d.status !== "CONCLUIDO" && (
                       <span
                         className={
@@ -181,7 +190,9 @@ export default async function DemandasPage({
                     )}
                   </>
                 ) : (
-                  <span className="text-slate-400">Sem prazo</span>
+                  !d.internalDueDate && (
+                    <span className="text-slate-400">Sem prazo</span>
+                  )
                 )}
               </TCell>
               <TCell>
@@ -190,7 +201,7 @@ export default async function DemandasPage({
               <TCell>
                 <EtiquetaStatus status={d.status} />
               </TCell>
-            </TRow>
+            </LinhaClicavel>
           ))}
         </tbody>
       </Table>

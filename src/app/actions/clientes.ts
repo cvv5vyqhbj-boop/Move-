@@ -54,6 +54,7 @@ export async function salvarContrato(dados: FormData) {
 
   const id = String(dados.get("id") ?? "");
   const fim = texto(dados, "endDate");
+  const pdf = texto(dados, "pdfUrl");
   const valores = {
     clientId: String(dados.get("clientId") ?? ""),
     title: String(dados.get("title") ?? "").trim(),
@@ -61,6 +62,8 @@ export async function salvarContrato(dados: FormData) {
     startDate: new Date(String(dados.get("startDate") || new Date().toISOString())),
     endDate: fim ? new Date(fim) : null,
     status: String(dados.get("status") ?? "ATIVO"),
+    // Aceita http/https ou o pessoal cola o link do Drive/Docs.
+    pdfUrl: pdf && /^https?:\/\//i.test(pdf) ? pdf : null,
     notes: texto(dados, "notes"),
   };
 

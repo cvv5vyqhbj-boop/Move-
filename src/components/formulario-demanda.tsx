@@ -21,6 +21,7 @@ type Demanda = {
   assigneeId: string | null;
   status: string;
   priority: string;
+  internalDueDate: Date | null;
   dueDate: Date | null;
 };
 
@@ -101,8 +102,29 @@ export function FormularioDemanda({
                   options={pessoas.map((p) => ({ value: p.id, label: p.name }))}
                 />
               </Field>
+            </div>
+          </FormSection>
 
-              <Field label="Prazo de entrega">
+          <FormSection
+            title="Prazos"
+            subtitle="O prazo interno serve para a equipe se organizar antes do prazo combinado com o cliente."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Prazo interno da equipe"
+                hint="Data-alvo para ficar pronto internamente."
+              >
+                <Input
+                  name="internalDueDate"
+                  type="date"
+                  defaultValue={dateInput(demanda?.internalDueDate)}
+                />
+              </Field>
+
+              <Field
+                label="Prazo com o cliente"
+                hint="Data que foi combinada com o cliente para receber."
+              >
                 <Input
                   name="dueDate"
                   type="date"

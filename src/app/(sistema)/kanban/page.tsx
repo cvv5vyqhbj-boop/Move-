@@ -76,6 +76,7 @@ export default async function KanbanPage({
           area: d.area,
           priority: d.priority,
           dueDate: d.dueDate,
+          internalDueDate: d.internalDueDate,
           clienteNome: d.client?.name ?? "Interno",
           responsavelNome: d.assignee?.name ?? "Sem responsável",
           comentarios: d._count.comments,

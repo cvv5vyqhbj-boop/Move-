@@ -20,6 +20,7 @@ type ContratoEditavel = {
   startDate: Date;
   endDate: Date | null;
   status: string;
+  pdfUrl: string | null;
   notes: string | null;
 };
 
@@ -110,6 +111,21 @@ export function FormularioContrato({
                 />
               </Field>
             </div>
+          </FormSection>
+
+          <FormSection
+            title="Contrato assinado"
+            subtitle="Cole o link do PDF (Google Drive, Docs, Dropbox…). Suba o arquivo no Drive e cole aqui o link de visualização."
+          >
+            <Field label="Link do contrato (PDF)">
+              <Input
+                name="pdfUrl"
+                type="url"
+                inputMode="url"
+                defaultValue={contrato?.pdfUrl ?? ""}
+                placeholder="https://drive.google.com/…"
+              />
+            </Field>
           </FormSection>
 
           <FormSection title="Observações">

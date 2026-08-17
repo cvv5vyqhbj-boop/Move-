@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
-import { MessageSquare } from "lucide-react";
+import { GripVertical, MessageSquare } from "lucide-react";
 import {
   DndContext,
   PointerSensor,
@@ -13,7 +13,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { STATUS, STATUS_ORDER, type DemandStatus } from "@/lib/constants";
+import { STATUS, STATUS_ORDER, type Area, type DemandStatus } from "@/lib/constants";
 import { moverDemanda } from "@/app/actions/demandas";
 import { EtiquetaArea, EtiquetaPrioridade } from "./etiquetas";
 import { date } from "@/lib/format";
@@ -25,19 +25,39 @@ export type CardDemanda = {
   area: string;
   priority: string;
   dueDate: Date | null;
+  internalDueDate: Date | null;
   clienteNome: string;
   responsavelNome: string;
   comentarios: number;
 };
 
+// A cor da faixa e do fundo do card espelha a etiqueta da area.
+const AREA_ACCENT: Record<Area, { bar: string; ring: string }> = {
+  EDICAO: { bar: "bg-violet-500", ring: "hover:border-violet-300" },
+  SOCIAL: { bar: "bg-sky-500", ring: "hover:border-sky-300" },
+  TRAFEGO: { bar: "bg-marca-500", ring: "hover:border-marca-300" },
+  DESIGN: { bar: "bg-amber-500", ring: "hover:border-amber-300" },
+  COPY: { bar: "bg-emerald-500", ring: "hover:border-emerald-300" },
+  FILMAGEM: { bar: "bg-slate-500", ring: "hover:border-slate-400" },
+};
+
 function Card({ demanda }: { demanda: CardDemanda }) {
+  const router = useRouter();
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: demanda.id });
 
-  const atrasada =
+  const hoje = new Date(new Date().toDateString());
+  const atrasadaCliente =
     demanda.dueDate &&
     demanda.status !== "CONCLUIDO" &&
-    new Date(demanda.dueDate) < new Date(new Date().toDateString());
+    new Date(demanda.dueDate) < hoje;
+  const atrasadaInterna =
+    demanda.internalDueDate &&
+    demanda.status !== "CONCLUIDO" &&
+    new Date(demanda.internalDueDate) < hoje;
+
+  const accent =
+    AREA_ACCENT[demanda.area as Area] ?? AREA_ACCENT.FILMAGEM;
 
   return (
     <div
@@ -48,47 +68,93 @@ function Card({ demanda }: { demanda: CardDemanda }) {
           : undefined
       }
       className={clsx(
-        "rounded-lg border border-slate-200 bg-white p-3 shadow-sm",
-        isDragging && "opacity-60 shadow-md",
+        "group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition",
+        accent.ring,
+        isDragging
+          ? "opacity-60 shadow-lg"
+          : "cursor-pointer hover:-translate-y-0.5 hover:shadow-md",
       )}
+      role="button"
+      tabIndex={0}
+      onClick={() => router.push(`/demandas/${demanda.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          router.push(`/demandas/${demanda.id}`);
+        }
+      }}
     >
-      <div
-        {...listeners}
-        {...attributes}
-        className="cursor-grab active:cursor-grabbing"
-      >
-        <p className="text-sm font-medium text-slate-900">{demanda.title}</p>
-        <p className="mt-1 text-xs text-slate-500">{demanda.clienteNome}</p>
+      {/* Faixa lateral colorida por area. */}
+      <span
+        className={clsx("absolute inset-y-0 left-0 w-1", accent.bar)}
+        aria-hidden
+      />
 
-        <div className="mt-2 flex flex-wrap gap-1">
-          <EtiquetaArea area={demanda.area} />
-          <EtiquetaPrioridade priority={demanda.priority} />
-        </div>
+      <div className="flex items-start gap-2 py-3 pr-2 pl-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-slate-900">{demanda.title}</p>
+          <p className="mt-0.5 truncate text-xs text-slate-500">
+            {demanda.clienteNome}
+          </p>
 
-        <div className="mt-2 flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-slate-400">
-            {demanda.responsavelNome}
-            {demanda.comentarios > 0 && (
-              <span className="flex items-center gap-0.5" title="Comentários">
-                <MessageSquare size={11} />
-                {demanda.comentarios}
+          <div className="mt-2 flex flex-wrap gap-1">
+            <EtiquetaArea area={demanda.area} />
+            <EtiquetaPrioridade priority={demanda.priority} />
+          </div>
+
+          <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <span className="truncate">{demanda.responsavelNome}</span>
+              {demanda.comentarios > 0 && (
+                <span
+                  className="flex items-center gap-0.5 text-slate-400"
+                  title="Comentários"
+                >
+                  <MessageSquare size={11} />
+                  {demanda.comentarios}
+                </span>
+              )}
+            </span>
+            {(demanda.dueDate || demanda.internalDueDate) && (
+              <span className="flex flex-col items-end gap-0.5">
+                {demanda.internalDueDate && (
+                  <span
+                    className={clsx(
+                      "text-[11px]",
+                      atrasadaInterna ? "text-rose-600" : "text-slate-400",
+                    )}
+                    title="Prazo interno"
+                  >
+                    interno {date(demanda.internalDueDate)}
+                  </span>
+                )}
+                {demanda.dueDate && (
+                  <span
+                    className={clsx(
+                      atrasadaCliente ? "text-rose-600" : "text-slate-500",
+                    )}
+                    title="Prazo com o cliente"
+                  >
+                    cliente {date(demanda.dueDate)}
+                  </span>
+                )}
               </span>
             )}
-          </span>
-          {demanda.dueDate && (
-            <span className={atrasada ? "text-rose-600" : "text-slate-400"}>
-              {date(demanda.dueDate)}
-            </span>
-          )}
+          </div>
         </div>
-      </div>
 
-      <Link
-        href={`/demandas/${demanda.id}`}
-        className="mt-2 inline-block text-xs text-marca-600 hover:underline"
-      >
-        Abrir
-      </Link>
+        {/* Alca de arrastar: separada do card para nao competir com o clique. */}
+        <button
+          type="button"
+          {...listeners}
+          {...attributes}
+          aria-label="Arrastar"
+          onClick={(e) => e.stopPropagation()}
+          className="mt-0.5 shrink-0 cursor-grab rounded p-1 text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-slate-500 group-hover:opacity-100 active:cursor-grabbing"
+        >
+          <GripVertical size={14} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -140,7 +206,7 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
   // Quando alguem da equipe mexe no quadro, os dados novos chegam por aqui.
   useEffect(() => setDemandas(inicial), [inicial]);
 
-  // Exige um pequeno arrasto antes de comecar, para o clique no link continuar funcionando.
+  // Exige um pequeno arrasto antes de comecar, para o clique no card continuar funcionando.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
