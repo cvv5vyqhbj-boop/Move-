@@ -1,10 +1,14 @@
 @import "tailwindcss";
 
+/* Ativa a variante "dark:" do Tailwind com base na classe .dark no <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Tema claro: fundo claro, texto escuro, laranja da Move como destaque. */
 @theme {
   --color-marca-50: #fff4ed;
   --color-marca-100: #ffe6d5;
   --color-marca-200: #fecaa9;
+  --color-marca-300: #fdb27a;
   --color-marca-500: #f26522;
   --color-marca-600: #e04e0c;
   --color-marca-700: #b93d0d;
@@ -12,6 +16,7 @@
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* --- Modo claro (padrão) ------------------------------------------------ */
 html,
 body {
   background: #f6f7f9;
@@ -23,7 +28,80 @@ body {
   scrollbar-width: thin;
 }
 
-/* Ao imprimir (ou salvar em PDF): só o conteúdo, sem menu nem botões. */
+/* --- Modo escuro -------------------------------------------------------- */
+/*
+ * Em vez de espalhar "dark:" em toda tela, mapeamos aqui os tons do slate
+ * (usados como cor de fundo, borda e texto pelo sistema inteiro) para tons
+ * escuros equivalentes. Assim uma única mudança no <html> escurece tudo.
+ */
+html.dark {
+  color-scheme: dark;
+}
+html.dark,
+html.dark body {
+  background: #0b1220;
+  color: #e2e8f0;
+}
+
+/* Fundos */
+.dark .bg-white { background-color: #111827 !important; }
+.dark .bg-slate-50 { background-color: #0f172a !important; }
+.dark .bg-slate-50\/60 { background-color: rgba(15, 23, 42, 0.6) !important; }
+.dark .bg-slate-50\/70 { background-color: rgba(15, 23, 42, 0.7) !important; }
+.dark .bg-slate-100 { background-color: #1e293b !important; }
+.dark .bg-slate-100\/60 { background-color: rgba(30, 41, 59, 0.55) !important; }
+.dark .bg-slate-900\/40 { background-color: rgba(0, 0, 0, 0.55) !important; }
+
+/* Bordas */
+.dark .border-slate-100 { border-color: #1e293b !important; }
+.dark .border-slate-200,
+.dark .border-slate-200\/80 { border-color: #263244 !important; }
+.dark .border-slate-300 { border-color: #334155 !important; }
+.dark .border-slate-400 { border-color: #475569 !important; }
+
+/* Divisores em texto (texto secundário / muted) */
+.dark .text-slate-900 { color: #e5edf7 !important; }
+.dark .text-slate-800 { color: #cbd5e1 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #a3b0c2 !important; }
+.dark .text-slate-500 { color: #94a3b8 !important; }
+.dark .text-slate-400 { color: #6f7d92 !important; }
+.dark .text-slate-300 { color: #52607a !important; }
+
+/* Hover states de fundo */
+.dark .hover\:bg-slate-50:hover { background-color: #0f172a !important; }
+.dark .hover\:bg-slate-50\/70:hover { background-color: rgba(15, 23, 42, 0.7) !important; }
+.dark .hover\:bg-slate-100:hover { background-color: #1e293b !important; }
+.dark .hover\:border-slate-400:hover { border-color: #475569 !important; }
+
+/* Marca (laranja) — clareamos os fundos "50/100" para não sumir no escuro */
+.dark .bg-marca-50 { background-color: rgba(242, 101, 34, 0.14) !important; }
+.dark .bg-marca-50\/60 { background-color: rgba(242, 101, 34, 0.10) !important; }
+.dark .bg-marca-100 { background-color: rgba(242, 101, 34, 0.20) !important; }
+.dark .text-marca-700 { color: #ffb187 !important; }
+
+/* Etiquetas coloridas: subimos a saturação do texto e afinamos o fundo */
+.dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.18) !important; }
+.dark .text-emerald-700 { color: #6ee7b7 !important; }
+.dark .text-emerald-600 { color: #6ee7b7 !important; }
+.dark .bg-rose-100 { background-color: rgba(244, 63, 94, 0.18) !important; }
+.dark .text-rose-700 { color: #fda4af !important; }
+.dark .text-rose-600 { color: #fda4af !important; }
+.dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.20) !important; }
+.dark .text-amber-700 { color: #fcd34d !important; }
+.dark .text-amber-600 { color: #fcd34d !important; }
+.dark .bg-sky-100 { background-color: rgba(14, 165, 233, 0.20) !important; }
+.dark .text-sky-700 { color: #7dd3fc !important; }
+.dark .bg-violet-100 { background-color: rgba(139, 92, 246, 0.22) !important; }
+.dark .text-violet-700 { color: #c4b5fd !important; }
+
+/* Foco: aro do laranja fica mais discreto no escuro para não estourar */
+.dark .focus\:ring-marca-100:focus { --tw-ring-color: rgba(242, 101, 34, 0.35) !important; }
+
+/* Sombras: no escuro elas ficam quase invisíveis; reforçamos com contorno */
+.dark .shadow-sm { box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4) !important; }
+
+/* Ao imprimir (ou salvar em PDF): força tema claro. */
 @media print {
   aside,
   header,
@@ -34,9 +112,15 @@ body {
   }
 
   html,
-  body {
-    background: #fff;
+  body,
+  html.dark,
+  html.dark body {
+    background: #fff !important;
+    color: #000 !important;
   }
+
+  .dark .bg-white { background-color: #fff !important; }
+  .dark .text-slate-900 { color: #000 !important; }
 
   main {
     padding: 0 !important;
@@ -48,7 +132,8 @@ body {
 
   /* Não corta uma linha da tabela no meio da página. */
   tr,
-  .rounded-xl {
+  .rounded-xl,
+  .rounded-2xl {
     break-inside: avoid;
   }
 }

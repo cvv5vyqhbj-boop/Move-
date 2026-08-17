@@ -22,6 +22,7 @@ import {
 import { MODULES, type Module } from "@/lib/permissions";
 import { ROLES, type Role } from "@/lib/constants";
 import { sair } from "@/app/actions/auth";
+import { TrocaTema } from "./troca-tema";
 
 const ICONS: Record<Module, typeof LayoutDashboard> = {
   PAINEL: LayoutDashboard,
@@ -91,15 +92,18 @@ export function MenuLateral({
           <p className="truncate text-sm font-medium text-slate-800">{nome}</p>
           <p className="text-xs text-slate-500">{ROLES[cargo]}</p>
         </Link>
-        <form action={sair} className="mt-3">
-          <button
-            type="submit"
-            className="flex cursor-pointer items-center gap-2 text-sm text-slate-500 hover:text-rose-600"
-          >
-            <LogOut size={16} />
-            Sair
-          </button>
-        </form>
+        <div className="mt-3 space-y-1">
+          <TrocaTema />
+          <form action={sair}>
+            <button
+              type="submit"
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-500 transition hover:bg-slate-100 hover:text-rose-600"
+            >
+              <LogOut size={16} />
+              Sair
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
