@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { clsx } from "clsx";
+import { useFormStatus } from "react-dom";
 import type { ReactNode } from "react";
 
 // Pecas visuais reaproveitadas por todas as telas.
@@ -112,10 +115,20 @@ export function Button({
   children,
   variant = "principal",
   className,
+  textoPendente,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "principal" | "secundario" | "perigo";
+  /** Texto mostrado enquanto o formulario esta enviando. Padrao: "Salvando…". */
+  textoPendente?: string;
 }) {
+  // Se este botao for um "submit" dentro de um <form action={...}>, o React
+  // avisa quando o envio esta em curso — trocamos a legenda e desabilitamos
+  // para dar retorno visual instantaneo.
+  const { pending } = useFormStatus();
+  const ehSubmit = (props.type ?? "button") === "submit";
+  const emAndamento = ehSubmit && pending;
+
   const variants = {
     principal:
       "bg-marca-500 text-white shadow-sm hover:bg-marca-600 active:bg-marca-700",
@@ -127,13 +140,21 @@ export function Button({
   return (
     <button
       {...props}
+      disabled={props.disabled || emAndamento}
+      aria-busy={emAndamento || undefined}
       className={clsx(
-        "inline-flex cursor-pointer items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-marca-300 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-marca-300 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60",
         variants[variant],
         className,
       )}
     >
-      {children}
+      {emAndamento && (
+        <span
+          aria-hidden
+          className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent"
+        />
+      )}
+      <span>{emAndamento ? textoPendente ?? "Salvando…" : children}</span>
     </button>
   );
 }
