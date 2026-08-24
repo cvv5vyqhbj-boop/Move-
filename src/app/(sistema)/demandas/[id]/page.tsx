@@ -22,7 +22,7 @@ export default async function EditarDemandaPage({
       where: { id, ...filtroDeVisibilidade(user) },
       include: {
         comments: {
-          include: { author: { select: { name: true } } },
+          include: { author: { select: { name: true, role: true } } },
           orderBy: { createdAt: "asc" },
         },
         attachments: { orderBy: { createdAt: "asc" } },

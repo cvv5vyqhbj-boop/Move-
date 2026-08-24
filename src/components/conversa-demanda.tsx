@@ -5,15 +5,35 @@ import {
   apagarLink,
   comentar,
 } from "@/app/actions/conversa";
+import { ROLE_AREA, type Role } from "@/lib/constants";
 import { Button, Card, Input, Textarea } from "./ui";
+import { CorDaArea } from "./etiquetas";
 
 type Comentario = {
   id: string;
   text: string;
   createdAt: Date;
   authorId: string | null;
-  author: { name: string } | null;
+  author: { name: string; role: string } | null;
 };
+
+// Cor de fundo do circulinho do autor, pintado pela area a que ele pertence.
+// Assim, na conversa da demanda, ja da para saber a olho quem e de qual area.
+const AREA_AVATAR: Record<string, string> = {
+  EDICAO: "bg-violet-100 text-violet-700",
+  SOCIAL: "bg-sky-100 text-sky-700",
+  TRAFEGO: "bg-marca-100 text-marca-700",
+  DESIGN: "bg-amber-100 text-amber-700",
+  COPY: "bg-emerald-100 text-emerald-700",
+  FILMAGEM: "bg-slate-100 text-slate-600",
+};
+
+function corDoAvatar(role: string | undefined): string {
+  if (!role) return "bg-slate-100 text-slate-600";
+  const area = ROLE_AREA[role as Role];
+  if (!area) return "bg-marca-100 text-marca-700"; // admin fica no laranja da marca
+  return AREA_AVATAR[area] ?? "bg-slate-100 text-slate-600";
+}
 
 type Link = { id: string; title: string; url: string };
 
@@ -71,15 +91,27 @@ export function ConversaDemanda({
           <ul className="mb-5 space-y-4">
             {comentarios.map((c) => (
               <li key={c.id} className="flex gap-3">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600">
+                <span
+                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-medium ${corDoAvatar(
+                    c.author?.role,
+                  )}`}
+                  title={
+                    c.author?.role
+                      ? `Cargo: ${c.author.role.toLowerCase()}`
+                      : undefined
+                  }
+                >
                   {iniciais(c.author?.name ?? "?")}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm">
+                  <p className="flex items-center gap-2 text-sm">
+                    {c.author?.role && ROLE_AREA[c.author.role as Role] && (
+                      <CorDaArea area={ROLE_AREA[c.author.role as Role] as string} />
+                    )}
                     <span className="font-medium text-slate-900">
                       {c.author?.name ?? "Alguém que saiu da equipe"}
                     </span>
-                    <span className="ml-2 text-xs text-slate-400">
+                    <span className="text-xs text-slate-400">
                       {quando(c.createdAt)}
                     </span>
                   </p>

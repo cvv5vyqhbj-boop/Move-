@@ -1,14 +1,17 @@
-import { ROLE_AREA } from "./constants";
 import type { SessionUser } from "./session";
 
 /**
  * O que cada pessoa enxerga em demandas e no kanban.
  *
- * Administrador ve tudo. As demais pessoas veem as demandas da area delas
- * (ex.: o editor ve edicao de video) mais qualquer demanda atribuida a elas.
+ * Regra atual da Move: TODO MUNDO ve todas as demandas (para acompanhar o que
+ * o resto do time esta fazendo, sem duvidas de "onde estao os outros"). O
+ * controle de acesso por cargo continua valendo — mas so entra em Financeiro,
+ * Clientes, Contratos, Relatorios e Equipe, que seguem so para o admin.
+ *
+ * Este helper existe para o resto do codigo continuar chamando "filtroDeVisibilidade"
+ * sem precisar saber que hoje ele nao filtra nada.
  */
-export function filtroDeVisibilidade(user: SessionUser) {
-  const area = ROLE_AREA[user.role];
-  if (!area) return {}; // administrador
-  return { OR: [{ area }, { assigneeId: user.id }] };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function filtroDeVisibilidade(_user: SessionUser) {
+  return {};
 }

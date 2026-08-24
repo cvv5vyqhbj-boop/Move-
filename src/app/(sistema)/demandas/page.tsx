@@ -1,8 +1,8 @@
 import { requireModule } from "@/lib/auth";
 import { LinhaClicavel } from "@/components/linha-clicavel";
+import { CorDaArea } from "@/components/etiquetas";
 import { db } from "@/lib/db";
-import { filtroDeVisibilidade } from "@/lib/demandas";
-import { AREAS, ROLE_AREA, STATUS } from "@/lib/constants";
+import { AREAS, STATUS } from "@/lib/constants";
 import { date, dueLabel } from "@/lib/format";
 import {
   EtiquetaArea,
@@ -28,13 +28,12 @@ export default async function DemandasPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const user = await requireModule("DEMANDAS");
+  await requireModule("DEMANDAS");
   const filtros = await searchParams;
 
   const busca = filtros.busca?.trim();
 
   const where = {
-    ...filtroDeVisibilidade(user),
     ...(busca
       ? {
           AND: [
@@ -63,17 +62,11 @@ export default async function DemandasPage({
     db.user.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
   ]);
 
-  const minhaArea = ROLE_AREA[user.role];
-
   return (
     <>
       <PageHeader
         title="Demandas"
-        subtitle={
-          minhaArea
-            ? `Você está vendo as demandas de ${AREAS[minhaArea].toLowerCase()} e as que são suas.`
-            : "Todas as demandas da agência."
-        }
+        subtitle="Todas as demandas do time — cada área tem uma cor para não misturar."
         action={<LinkButton href="/demandas/nova">+ Nova demanda</LinkButton>}
       />
 
@@ -147,7 +140,10 @@ export default async function DemandasPage({
           {demandas.map((d) => (
             <LinhaClicavel key={d.id} href={`/demandas/${d.id}`}>
               <TCell>
-                <span className="font-medium text-slate-900">{d.title}</span>
+                <span className="flex items-center gap-2">
+                  <CorDaArea area={d.area} />
+                  <span className="font-medium text-slate-900">{d.title}</span>
+                </span>
               </TCell>
               <TCell className="text-slate-600">
                 {d.client?.name ?? "Interno"}

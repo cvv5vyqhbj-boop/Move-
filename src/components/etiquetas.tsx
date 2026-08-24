@@ -45,6 +45,29 @@ export function EtiquetaArea({ area }: { area: string }) {
   return <Badge tone={AREA_TONE[key] ?? "cinza"}>{AREAS[key] ?? area}</Badge>;
 }
 
+// Bolinha colorida da area — usada quando queremos so um marcador visual,
+// sem repetir o nome da area (por exemplo, na frente do titulo de uma demanda).
+const AREA_BOLINHA: Record<Area, string> = {
+  EDICAO: "bg-violet-500",
+  SOCIAL: "bg-sky-500",
+  TRAFEGO: "bg-marca-500",
+  DESIGN: "bg-amber-500",
+  COPY: "bg-emerald-500",
+  FILMAGEM: "bg-slate-500",
+};
+
+export function CorDaArea({ area }: { area: string }) {
+  const key = area as Area;
+  const cor = AREA_BOLINHA[key] ?? "bg-slate-400";
+  return (
+    <span
+      className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${cor}`}
+      title={AREAS[key] ?? area}
+      aria-label={AREAS[key] ?? area}
+    />
+  );
+}
+
 export function EtiquetaStatus({ status }: { status: string }) {
   const key = status as DemandStatus;
   return <Badge tone={STATUS_TONE[key] ?? "cinza"}>{STATUS[key] ?? status}</Badge>;
