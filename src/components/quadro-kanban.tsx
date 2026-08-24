@@ -29,6 +29,8 @@ export type CardDemanda = {
   clienteNome: string;
   responsavelNome: string;
   comentarios: number;
+  /** True quando a demanda esta atribuida a quem esta vendo o quadro. */
+  minha: boolean;
 };
 
 // A cor da faixa e do fundo do card espelha a etiqueta da area.
@@ -68,8 +70,12 @@ function Card({ demanda }: { demanda: CardDemanda }) {
           : undefined
       }
       className={clsx(
-        "group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition",
-        accent.ring,
+        "group relative overflow-hidden rounded-xl border shadow-sm transition",
+        // Card "meu": borda laranja + fundo levemente tingido para saltar aos olhos.
+        demanda.minha
+          ? "border-marca-400 bg-marca-50/40 ring-1 ring-marca-200"
+          : "border-slate-200 bg-white",
+        !demanda.minha && accent.ring,
         isDragging
           ? "opacity-60 shadow-lg"
           : "cursor-pointer hover:-translate-y-0.5 hover:shadow-md",

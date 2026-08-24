@@ -15,10 +15,10 @@ export default async function KanbanPage({
   const filtros = await searchParams;
 
   // Modo do quadro:
-  // - "minhas" (padrao): so as demandas dela que ainda nao estao concluidas.
-  // - "todas": tudo, como um kanban geral (util para ver o que o time esta fazendo).
-  // O administrador tambem pode alternar entre os dois.
-  const modo = filtros.modo === "todas" ? "todas" : "minhas";
+  // - "todas" (padrao): kanban compartilhado com tudo do time. As demandas
+  //   da propria pessoa aparecem destacadas para nao se perder no meio.
+  // - "minhas": foca so no que esta atribuido a ela e ainda nao concluido.
+  const modo = filtros.modo === "minhas" ? "minhas" : "todas";
 
   const where = {
     ...(filtros.cliente ? { clientId: filtros.cliente } : {}),
@@ -44,13 +44,12 @@ export default async function KanbanPage({
   const subtitulo =
     modo === "minhas"
       ? "Suas demandas em aberto. Arraste o card para mudar a situação."
-      : "Todas as demandas do time. Arraste o card para mudar a situação.";
+      : "Quadro do time. As suas ficam destacadas em laranja. Arraste para mudar a situação.";
 
   const linkAlternar =
-    modo === "minhas"
-      ? "/kanban?modo=todas"
-      : "/kanban?modo=minhas";
-  const textoAlternar = modo === "minhas" ? "Ver todas do time" : "Ver só minhas";
+    modo === "minhas" ? "/kanban" : "/kanban?modo=minhas";
+  const textoAlternar =
+    modo === "minhas" ? "Ver quadro do time" : "Ver só as minhas";
 
   return (
     <>
@@ -90,7 +89,7 @@ export default async function KanbanPage({
             Filtrar
           </Button>
           <LinkButton
-            href={modo === "minhas" ? "/kanban" : "/kanban?modo=todas"}
+            href={modo === "minhas" ? "/kanban?modo=minhas" : "/kanban"}
             variant="secundario"
           >
             Limpar
@@ -110,6 +109,7 @@ export default async function KanbanPage({
           clienteNome: d.client?.name ?? "Interno",
           responsavelNome: d.assignee?.name ?? "Sem responsável",
           comentarios: d._count.comments,
+          minha: d.assigneeId === user.id,
         }))}
       />
     </>
