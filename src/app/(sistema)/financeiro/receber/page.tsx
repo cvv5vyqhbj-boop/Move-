@@ -7,6 +7,8 @@ import {
 } from "@/app/actions/financeiro";
 import { date, money, monthLabel } from "@/lib/format";
 import { AbasFinanceiro } from "@/components/abas-financeiro";
+import { BotaoSincronizarCora } from "@/components/botao-sincronizar-cora";
+import { coraConfigurado } from "@/lib/cora";
 import { EtiquetaPagamento } from "@/components/etiquetas";
 import {
   Button,
@@ -57,6 +59,12 @@ export default async function ContasAReceberPage({
       />
 
       <AbasFinanceiro />
+
+      {coraConfigurado() && (
+        <div className="mb-4">
+          <BotaoSincronizarCora />
+        </div>
+      )}
 
       {geradas !== undefined && (
         <p className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">

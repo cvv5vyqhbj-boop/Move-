@@ -42,6 +42,28 @@ const comSenhaNaoTrocada = ["DATABASE_URL", "DIRECT_URL"].filter((nome) =>
   (process.env[nome] ?? "").includes("[YOUR-PASSWORD]"),
 );
 
+// Cora é opcional (o sistema funciona sem a integração), mas se estiver
+// só pela metade a Alyson vai clicar em "Sincronizar" e receber erro sem
+// saber por quê. Avisar agora, no build, evita esse tropeço depois.
+const CORA_VARS = ["CORA_CLIENT_ID", "CORA_CERT_PEM", "CORA_KEY_PEM"];
+const coraPreenchidas = CORA_VARS.filter((n) => process.env[n]);
+const coraFaltando =
+  coraPreenchidas.length > 0 && coraPreenchidas.length < CORA_VARS.length
+    ? CORA_VARS.filter((n) => !process.env[n])
+    : [];
+
+if (coraFaltando.length > 0) {
+  console.error("\n" + "=".repeat(64));
+  console.error("   Integração com o Cora incompleta");
+  console.error("=".repeat(64) + "\n");
+  console.error("Você cadastrou parte das variáveis do Cora, mas faltou:\n");
+  for (const nome of coraFaltando) console.error(`  ${nome}`);
+  console.error(
+    "\nCadastre as três (ou apague as que colocou), depois publique de novo.\n",
+  );
+  process.exit(1);
+}
+
 if (faltando.length > 0 || comSenhaNaoTrocada.length > 0) {
   console.error("\n" + "=".repeat(64));
   console.error("   A publicação parou: falta configurar o sistema");

@@ -142,6 +142,10 @@ model Payable {
   /// aponta para ele. E assim que o relatorio calcula o que sobra por cliente.
   clientId String?
   client   Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  /// Id do lancamento no Cora quando esta conta veio do extrato dele.
+  /// Usado para nao importar duas vezes o mesmo debito.
+  coraEntryId String? @unique
 }
 
 model Receivable {
@@ -157,6 +161,17 @@ model Receivable {
 
   client   Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
   contract Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+
+  /// Id do lancamento no Cora quando este recebido veio do extrato dele.
+  coraEntryId String? @unique
+}
+
+// Chave/valor para pequenas configuracoes do sistema (ex.: quando foi a
+// ultima sincronizacao com o Cora, para saber por onde continuar).
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 // ---------------------------------------------------------------------------

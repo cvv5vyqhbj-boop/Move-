@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { marcarComoPago } from "@/app/actions/financeiro";
 import { date, money } from "@/lib/format";
 import { AbasFinanceiro } from "@/components/abas-financeiro";
+import { BotaoSincronizarCora } from "@/components/botao-sincronizar-cora";
+import { coraConfigurado } from "@/lib/cora";
 import { EtiquetaPagamento } from "@/components/etiquetas";
 import {
   Button,
@@ -43,6 +45,12 @@ export default async function ContasAPagarPage() {
       />
 
       <AbasFinanceiro />
+
+      {coraConfigurado() && (
+        <div className="mb-4">
+          <BotaoSincronizarCora />
+        </div>
+      )}
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <Stat label="Em aberto" value={money(total)} tone="negativo" />

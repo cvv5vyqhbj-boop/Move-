@@ -15,3 +15,8 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Funcoes serverless personalizadas (fora do Next).
+# O agendamento em si e declarado no proprio arquivo da funcao.
+[functions]
+  directory = "netlify/functions"

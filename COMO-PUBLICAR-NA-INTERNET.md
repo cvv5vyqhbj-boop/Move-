@@ -167,6 +167,41 @@ limitadas. Uma vez por mês, entre em **Relatórios** e **Financeiro** e clique 
 
 ---
 
+## Conectar com o Cora (opcional)
+
+Se você quer que **o que entra e sai da sua conta Cora apareça automaticamente
+no financeiro**, cadastre três variáveis extras na Netlify. Sem elas, o sistema
+segue funcionando normalmente — você só lança manualmente, como sempre.
+
+No painel do Cora, em **Integrações → Conexão API**, gere um par de
+certificados. Vem um arquivo `certificate.pem`, um `private-key.key` e um
+"Client ID" (uma sequência longa).
+
+Depois, na Netlify (**Site configuration → Environment variables**), cadastre:
+
+| Nome | O que colar |
+| --- | --- |
+| `CORA_CLIENT_ID` | O Client ID que apareceu no painel do Cora |
+| `CORA_CERT_PEM` | O conteúdo **inteiro** do arquivo `certificate.pem` (abre num editor de texto e cola tudo, com as linhas `-----BEGIN…` e `-----END…`) |
+| `CORA_KEY_PEM` | O conteúdo **inteiro** do arquivo `private-key.key` |
+
+> ⚠️ **A chave privada é o cofre da sua conta.** Ela só deve viver na tela de
+> variáveis da Netlify, nunca em e-mail, WhatsApp ou GitHub. Se um dia você
+> desconfiar que vazou, gere um novo par no painel do Cora — o antigo para de
+> valer na hora.
+
+Depois de cadastrar, clique em **Trigger deploy → Deploy site** para o sistema
+recarregar com as novas variáveis. Assim que subir:
+
+- Aparece o botão **"Sincronizar com o Cora"** nas telas **Contas a pagar** e
+  **Contas a receber**. Clique nele uma vez para trazer o último mês.
+- A partir daí, **a cada hora** o sistema puxa sozinho o que entrou/saiu novo.
+- Entradas viram linhas em **Contas a receber** (já como "Recebido"), saídas
+  viram linhas em **Contas a pagar** (já como "Pago"). Nada é duplicado se
+  você clicar em sincronizar de novo.
+
+---
+
 ## Publicando mudanças depois
 
 Toda vez que o código mudar no GitHub, a Netlify republica sozinha. Você não
