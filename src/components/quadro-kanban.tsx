@@ -6,13 +6,16 @@ import { clsx } from "clsx";
 import { GripVertical, MessageSquare } from "lucide-react";
 import {
   DndContext,
-  PointerSensor,
+  DragOverlay,
+  MouseSensor,
   TouchSensor,
+  closestCorners,
   useDraggable,
   useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import { STATUS, STATUS_ORDER, type Area, type DemandStatus } from "@/lib/constants";
 import { moverDemanda } from "@/app/actions/demandas";
@@ -44,11 +47,22 @@ const AREA_ACCENT: Record<Area, { bar: string; ring: string }> = {
   FILMAGEM: { bar: "bg-slate-500", ring: "hover:border-slate-400" },
 };
 
-function Card({ demanda }: { demanda: CardDemanda }) {
-  const router = useRouter();
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: demanda.id });
-
+/**
+ * O desenho do card, sem nada de arrastar.
+ *
+ * Fica separado porque ele e usado em dois lugares: no lugar dele dentro da
+ * coluna, e no "card flutuante" que segue o dedo durante o arraste.
+ */
+function CartaoVisual({
+  demanda,
+  alca,
+  flutuando,
+}: {
+  demanda: CardDemanda;
+  /** A alcinha de arrastar. O card flutuante nao precisa dela. */
+  alca?: React.ReactNode;
+  flutuando?: boolean;
+}) {
   const hoje = new Date(new Date().toDateString());
   const atrasadaCliente =
     demanda.dueDate &&
@@ -59,39 +73,25 @@ function Card({ demanda }: { demanda: CardDemanda }) {
     demanda.status !== "CONCLUIDO" &&
     new Date(demanda.internalDueDate) < hoje;
 
-  const accent =
-    AREA_ACCENT[demanda.area as Area] ?? AREA_ACCENT.FILMAGEM;
+  const accent = AREA_ACCENT[demanda.area as Area] ?? AREA_ACCENT.FILMAGEM;
 
   return (
     <div
-      ref={setNodeRef}
-      style={
-        transform
-          ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-          : undefined
-      }
       className={clsx(
         // "select-none" evita que apertar e segurar no iPad/Safari
         // dispare a selecao de texto no lugar do arraste.
-        "group relative select-none overflow-hidden rounded-xl border shadow-sm transition",
-        // Card "meu": borda laranja + fundo levemente tingido para saltar aos olhos.
+        "group relative select-none overflow-hidden rounded-xl border",
         demanda.minha
           ? "border-marca-400 bg-marca-50/40 ring-1 ring-marca-200"
           : "border-slate-200 bg-white",
-        !demanda.minha && accent.ring,
-        isDragging
-          ? "opacity-60 shadow-lg"
-          : "cursor-pointer hover:-translate-y-0.5 hover:shadow-md",
+        flutuando
+          ? "rotate-1 scale-[1.03] cursor-grabbing shadow-2xl"
+          : clsx(
+              "shadow-sm transition",
+              !demanda.minha && accent.ring,
+              "hover:-translate-y-0.5 hover:shadow-md",
+            ),
       )}
-      role="button"
-      tabIndex={0}
-      onClick={() => router.push(`/demandas/${demanda.id}`)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          router.push(`/demandas/${demanda.id}`);
-        }
-      }}
     >
       {/* Faixa lateral colorida por area. */}
       <span
@@ -152,27 +152,66 @@ function Card({ demanda }: { demanda: CardDemanda }) {
           </div>
         </div>
 
-        {/*
-         * Alca de arrastar: separada do card para nao competir com o clique.
-         *
-         * - No computador (hover:): a alca fica invisivel e aparece so ao passar
-         *   o mouse — visual mais limpo.
-         * - No celular/iPad (sem hover): fica sempre visivel, senao a pessoa
-         *   nao teria como saber onde arrastar.
-         * - "touch-action-none" avisa ao navegador para NAO tentar rolar nem
-         *   selecionar texto quando o dedo toca aqui — ele delega ao dnd-kit.
-         */}
-        <button
-          type="button"
-          {...listeners}
-          {...attributes}
-          aria-label="Arrastar"
-          onClick={(e) => e.stopPropagation()}
-          className="mt-0.5 shrink-0 touch-none cursor-grab rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing md:opacity-0 md:group-hover:opacity-100"
-        >
-          <GripVertical size={16} />
-        </button>
+        {alca}
       </div>
+    </div>
+  );
+}
+
+function Card({ demanda }: { demanda: CardDemanda }) {
+  const router = useRouter();
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: demanda.id,
+  });
+
+  /*
+   * O CARD INTEIRO arrasta — nao so uma alcinha.
+   *
+   * A alcinha de 44px parecia suficiente, mas no iPad ela vira uma armadilha:
+   * a tela util tem ~840px e cada coluna 288px, entao a partir da terceira
+   * coluna a alcinha do card cai FORA da tela e o dedo simplesmente nao
+   * alcanca. Era essa a causa do "so funciona de vez em quando".
+   *
+   * Com o card inteiro arrastavel nao existe alvo pequeno para acertar:
+   *   - toque parado / clique  -> abre a demanda (a ativacao e por distancia)
+   *   - arrastar de lado       -> move de coluna
+   *
+   * "touch-pan-y" e o detalhe que faz os dois conviverem: o Safari continua
+   * dono do movimento vertical (rolar a pagina segue funcionando com o dedo
+   * em cima do card), e o horizontal fica para o dnd-kit.
+   */
+  const grip = (
+    <span
+      aria-hidden
+      className="-mt-0.5 shrink-0 text-slate-300 transition com-mouse:opacity-0 com-mouse:group-hover:opacity-100"
+    >
+      <GripVertical size={18} />
+    </span>
+  );
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={clsx(
+        "cursor-grab touch-pan-y active:cursor-grabbing",
+        // Enquanto arrasta, o card original fica de "fantasma" no lugar dele —
+        // quem segue o dedo e o card flutuante (DragOverlay).
+        isDragging && "opacity-40",
+      )}
+      role="button"
+      tabIndex={0}
+      aria-label={`${demanda.title}. Toque para abrir, arraste para mudar de coluna.`}
+      onClick={() => router.push(`/demandas/${demanda.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          router.push(`/demandas/${demanda.id}`);
+        }
+      }}
+    >
+      <CartaoVisual demanda={demanda} alca={grip} />
     </div>
   );
 }
@@ -189,8 +228,12 @@ function Coluna({
   return (
     <div
       ref={setNodeRef}
+      data-coluna={status}
       className={clsx(
-        "flex w-72 shrink-0 flex-col rounded-xl border p-3 transition",
+        // Colunas mais estreitas em telas menores: no iPad deitado cabem três
+        // por vez em vez de duas e meia, então sobra menos arraste "às cegas"
+        // para fora da tela.
+        "flex w-64 shrink-0 flex-col rounded-xl border p-3 transition lg:w-72",
         isOver
           ? "border-marca-500 bg-marca-50"
           : "border-slate-200 bg-slate-100/60",
@@ -219,6 +262,7 @@ function Coluna({
 
 export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
   const [demandas, setDemandas] = useState(inicial);
+  const [arrastandoId, setArrastandoId] = useState<string | null>(null);
   const [, iniciar] = useTransition();
 
   // "Assinatura" leve das demandas: id + coluna. Se a assinatura nao mudou,
@@ -241,28 +285,40 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assinatura]);
 
-  // No computador (mouse): exige um pequeno arrasto para o clique no card
-  // continuar funcionando.
-  // No celular/iPad (toque): delay minusculo (~30ms) so para separar do
-  // primeiro pixel do gesto — nao da para ser zero porque quebraria a
-  // rolagem da pagina, mas 30ms mal se sente ao toque.
+  /*
+   * Um sensor para cada tipo de entrada, sem sobreposicao.
+   *
+   * Usamos MouseSensor (so mouse) em vez de PointerSensor porque o
+   * PointerSensor tambem responde a toque — no iPad os dois sensores
+   * disputavam o mesmo gesto e o arraste so pegava de vez em quando.
+   *
+   * Nos dois casos a ativacao e por DISTANCIA, nao por tempo: assim que o
+   * dedo (ou o mouse) anda alguns pixels a partir da alca, o arraste comeca.
+   * Nada de esperar. Antes usavamos {delay, tolerance} no toque, e ali o
+   * "tolerance" CANCELA o arraste se o dedo se mexer durante a espera — o
+   * que acontecia quase sempre, porque a mao ja sai puxando.
+   *
+   * A alca tem "touch-none", entao o Safari nao tenta rolar a pagina a
+   * partir dela e entrega o gesto inteiro para o dnd-kit.
+   */
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 30, tolerance: 5 },
-    }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { distance: 8 } }),
   );
 
-  function aoComecar() {
+  function aoComecar(evento: DragStartEvent) {
     arrastando.current = true;
+    setArrastandoId(String(evento.active.id));
   }
 
   function aoCancelar() {
     arrastando.current = false;
+    setArrastandoId(null);
   }
 
   function aoSoltar(evento: DragEndEvent) {
     arrastando.current = false;
+    setArrastandoId(null);
     const novoStatus = evento.over?.id as DemandStatus | undefined;
     const id = String(evento.active.id);
     if (!novoStatus) return;
@@ -284,9 +340,30 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
     });
   }
 
+  const emArrasto = arrastandoId
+    ? demandas.find((d) => d.id === arrastandoId)
+    : null;
+
   return (
     <DndContext
       sensors={sensors}
+      // "closestCorners" acerta a coluna mesmo quando o card so encosta nela.
+      // O padrao exige sobreposicao de area, o que no iPad (tela estreita,
+      // colunas largas) fazia o card voltar sozinho para o lugar.
+      collisionDetection={closestCorners}
+      /*
+       * Rolagem automatica ao arrastar para a beirada — e assim que se leva um
+       * card para uma coluna que esta fora da tela.
+       *
+       * O padrao do dnd-kit e rapido demais para telas estreitas: no celular,
+       * onde cabe so uma coluna, ele disparava e passava direto do destino.
+       * Aqui a rolagem so comeca bem perto da borda (10%) e anda devagar, para
+       * dar tempo de ver a coluna certa chegar e soltar nela.
+       */
+      autoScroll={{
+        threshold: { x: 0.1, y: 0 },
+        acceleration: 4,
+      }}
       onDragStart={aoComecar}
       onDragCancel={aoCancelar}
       onDragEnd={aoSoltar}
@@ -300,6 +377,19 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
           />
         ))}
       </div>
+
+      {/*
+       * O card que segue o dedo. Fica num nivel acima de tudo, entao nao e
+       * cortado pela coluna nem passa por baixo das outras — que era o que
+       * acontecia quando o card era so deslocado no lugar dele.
+       */}
+      <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
+        {emArrasto ? (
+          <div className="w-64 lg:w-72">
+            <CartaoVisual demanda={emArrasto} flutuando />
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 }

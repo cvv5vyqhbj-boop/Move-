@@ -3,6 +3,15 @@
 /* Ativa a variante "dark:" do Tailwind com base na classe .dark no <html>. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * "com-mouse:" vale só onde existe um ponteiro de verdade (mouse/trackpad).
+ *
+ * Usar "md:" para isso é erro clássico: iPad deitado tem 1080px de largura e
+ * cairia no md:, ganhando um visual que depende de passar o mouse — coisa que
+ * o dedo nunca faz. Aqui perguntamos pelo aparelho, não pelo tamanho da tela.
+ */
+@custom-variant com-mouse (@media (hover: hover) and (pointer: fine));
+
 /* Tema claro: fundo claro, texto escuro, laranja da Move como destaque. */
 @theme {
   --color-marca-50: #fff4ed;

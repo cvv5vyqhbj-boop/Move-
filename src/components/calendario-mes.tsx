@@ -165,9 +165,14 @@ export function CalendarioMes({
                 >
                   {dia}
                 </span>
+                {/*
+                 * No dedo o "+" fica sempre à vista (discreto), porque não há
+                 * hover para revelá-lo. Só onde existe mouse ele some até o
+                 * cursor passar por cima.
+                 */}
                 <Plus
                   size={12}
-                  className="text-slate-300 opacity-0 transition group-hover:opacity-100"
+                  className="text-slate-300 transition com-mouse:opacity-0 com-mouse:group-hover:opacity-100"
                   aria-hidden
                 />
               </span>
