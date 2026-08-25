@@ -243,12 +243,13 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
 
   // No computador (mouse): exige um pequeno arrasto para o clique no card
   // continuar funcionando.
-  // No celular/iPad (toque): exige um "toque parado" curto para nao brigar
-  // com a rolagem da pagina nem selecionar texto ao encostar.
+  // No celular/iPad (toque): delay minusculo (~30ms) so para separar do
+  // primeiro pixel do gesto — nao da para ser zero porque quebraria a
+  // rolagem da pagina, mas 30ms mal se sente ao toque.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 150, tolerance: 5 },
+      activationConstraint: { delay: 30, tolerance: 5 },
     }),
   );
 
