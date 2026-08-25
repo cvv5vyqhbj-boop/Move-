@@ -7,6 +7,7 @@ import { GripVertical, MessageSquare } from "lucide-react";
 import {
   DndContext,
   PointerSensor,
+  TouchSensor,
   useDraggable,
   useDroppable,
   useSensor,
@@ -70,7 +71,9 @@ function Card({ demanda }: { demanda: CardDemanda }) {
           : undefined
       }
       className={clsx(
-        "group relative overflow-hidden rounded-xl border shadow-sm transition",
+        // "select-none" evita que apertar e segurar no iPad/Safari
+        // dispare a selecao de texto no lugar do arraste.
+        "group relative select-none overflow-hidden rounded-xl border shadow-sm transition",
         // Card "meu": borda laranja + fundo levemente tingido para saltar aos olhos.
         demanda.minha
           ? "border-marca-400 bg-marca-50/40 ring-1 ring-marca-200"
@@ -149,16 +152,25 @@ function Card({ demanda }: { demanda: CardDemanda }) {
           </div>
         </div>
 
-        {/* Alca de arrastar: separada do card para nao competir com o clique. */}
+        {/*
+         * Alca de arrastar: separada do card para nao competir com o clique.
+         *
+         * - No computador (hover:): a alca fica invisivel e aparece so ao passar
+         *   o mouse — visual mais limpo.
+         * - No celular/iPad (sem hover): fica sempre visivel, senao a pessoa
+         *   nao teria como saber onde arrastar.
+         * - "touch-action-none" avisa ao navegador para NAO tentar rolar nem
+         *   selecionar texto quando o dedo toca aqui — ele delega ao dnd-kit.
+         */}
         <button
           type="button"
           {...listeners}
           {...attributes}
           aria-label="Arrastar"
           onClick={(e) => e.stopPropagation()}
-          className="mt-0.5 shrink-0 cursor-grab rounded p-1 text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-slate-500 group-hover:opacity-100 active:cursor-grabbing"
+          className="mt-0.5 shrink-0 touch-none cursor-grab rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-500 active:cursor-grabbing md:opacity-0 md:group-hover:opacity-100"
         >
-          <GripVertical size={14} />
+          <GripVertical size={16} />
         </button>
       </div>
     </div>
@@ -212,9 +224,15 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
   // Quando alguem da equipe mexe no quadro, os dados novos chegam por aqui.
   useEffect(() => setDemandas(inicial), [inicial]);
 
-  // Exige um pequeno arrasto antes de comecar, para o clique no card continuar funcionando.
+  // No computador (mouse): exige um pequeno arrasto para o clique no card
+  // continuar funcionando.
+  // No celular/iPad (toque): exige um "toque parado" curto para nao brigar
+  // com a rolagem da pagina nem selecionar texto ao encostar.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 150, tolerance: 5 },
+    }),
   );
 
   function aoSoltar(evento: DragEndEvent) {
