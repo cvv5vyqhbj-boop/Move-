@@ -32,6 +32,7 @@ model User {
   demands  Demand[]  @relation("Responsavel")
   goals    Goal[]
   comments Comment[]
+  agendas  Agenda[]  @relation("AgendaCriadaPor")
 }
 
 // ---------------------------------------------------------------------------
@@ -55,6 +56,7 @@ model Client {
   demands     Demand[]
   receivables Receivable[]
   payables    Payable[]
+  agendas     Agenda[]
 }
 
 model Contract {
@@ -172,6 +174,29 @@ model AppSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Agenda do calendario
+// ---------------------------------------------------------------------------
+
+/// Compromisso marcado direto no calendario: gravacao, post, reuniao, entrega.
+/// Diferente da demanda (que e trabalho a fazer), isto e "o que acontece no dia".
+model Agenda {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   @default("OUTRO") // GRAVACAO | POST | REUNIAO | ENTREGA | OUTRO
+  date        DateTime // dia do compromisso
+  time        String? // hora no formato "14:30", opcional
+  clientId    String?
+  notes       String?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  client    Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  createdBy User?   @relation("AgendaCriadaPor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([date])
 }
 
 // ---------------------------------------------------------------------------

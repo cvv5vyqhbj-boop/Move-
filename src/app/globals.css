@@ -76,22 +76,35 @@ html.dark body {
 
 /* Marca (laranja) — clareamos os fundos "50/100" para não sumir no escuro */
 .dark .bg-marca-50 { background-color: rgba(242, 101, 34, 0.14) !important; }
+.dark .bg-marca-50\/40 { background-color: rgba(242, 101, 34, 0.12) !important; }
 .dark .bg-marca-50\/60 { background-color: rgba(242, 101, 34, 0.10) !important; }
 .dark .bg-marca-100 { background-color: rgba(242, 101, 34, 0.20) !important; }
 .dark .text-marca-700 { color: #ffb187 !important; }
+.dark .hover\:bg-marca-50\/40:hover { background-color: rgba(242, 101, 34, 0.16) !important; }
+.dark .hover\:bg-marca-50\/60:hover { background-color: rgba(242, 101, 34, 0.16) !important; }
 
-/* Etiquetas coloridas: subimos a saturação do texto e afinamos o fundo */
+/* Etiquetas coloridas: subimos a saturação do texto e afinamos o fundo.
+   Os tons "50" (fundos bem claros) também precisam entrar aqui — no escuro
+   eles ficariam quase brancos e ilegíveis. */
+.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.14) !important; }
 .dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.18) !important; }
+.dark .text-emerald-800 { color: #6ee7b7 !important; }
 .dark .text-emerald-700 { color: #6ee7b7 !important; }
 .dark .text-emerald-600 { color: #6ee7b7 !important; }
+.dark .bg-rose-50 { background-color: rgba(244, 63, 94, 0.14) !important; }
 .dark .bg-rose-100 { background-color: rgba(244, 63, 94, 0.18) !important; }
+.dark .hover\:bg-rose-50:hover { background-color: rgba(244, 63, 94, 0.18) !important; }
+.dark .border-rose-200 { border-color: rgba(244, 63, 94, 0.35) !important; }
 .dark .text-rose-700 { color: #fda4af !important; }
 .dark .text-rose-600 { color: #fda4af !important; }
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.14) !important; }
 .dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.20) !important; }
 .dark .text-amber-700 { color: #fcd34d !important; }
 .dark .text-amber-600 { color: #fcd34d !important; }
+.dark .bg-sky-50 { background-color: rgba(14, 165, 233, 0.14) !important; }
 .dark .bg-sky-100 { background-color: rgba(14, 165, 233, 0.20) !important; }
 .dark .text-sky-700 { color: #7dd3fc !important; }
+.dark .bg-violet-50 { background-color: rgba(139, 92, 246, 0.16) !important; }
 .dark .bg-violet-100 { background-color: rgba(139, 92, 246, 0.22) !important; }
 .dark .text-violet-700 { color: #c4b5fd !important; }
 

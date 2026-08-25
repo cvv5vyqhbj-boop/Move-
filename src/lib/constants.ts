@@ -67,6 +67,17 @@ export const CONTRACT_STATUS = {
   ENCERRADO: "Encerrado",
 } as const;
 
+/** Tipos de compromisso que dá para marcar direto no calendário. */
+export const AGENDA_TIPOS = {
+  GRAVACAO: "Gravação",
+  POST: "Post / publicação",
+  REUNIAO: "Reunião",
+  ENTREGA: "Entrega ao cliente",
+  OUTRO: "Outro",
+} as const;
+
+export type AgendaTipo = keyof typeof AGENDA_TIPOS;
+
 export const GOAL_SCOPE = {
   PESSOAL: "Pessoal",
   EQUIPE: "Equipe",
