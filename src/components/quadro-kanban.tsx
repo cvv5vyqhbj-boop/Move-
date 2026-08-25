@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { GripVertical, MessageSquare } from "lucide-react";
@@ -221,8 +221,25 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
   const [demandas, setDemandas] = useState(inicial);
   const [, iniciar] = useTransition();
 
-  // Quando alguem da equipe mexe no quadro, os dados novos chegam por aqui.
-  useEffect(() => setDemandas(inicial), [inicial]);
+  // "Assinatura" leve das demandas: id + coluna. Se a assinatura nao mudou,
+  // nao vale a pena refazer o estado local — evita o "pisca" que o array novo
+  // do servidor causava em toda renderizacao.
+  const assinatura = inicial.map((d) => `${d.id}:${d.status}`).join("|");
+  const assinaturaAtual = useRef(assinatura);
+
+  // Enquanto o usuario esta arrastando um card, seguramos as atualizacoes do
+  // servidor. Assim o card nao "volta ao lugar" no meio do movimento.
+  const arrastando = useRef(false);
+
+  useEffect(() => {
+    if (arrastando.current) return;
+    if (assinatura === assinaturaAtual.current) return;
+    assinaturaAtual.current = assinatura;
+    setDemandas(inicial);
+    // Depende so da assinatura: mudou de verdade, atualiza; nao mudou,
+    // ignora — mesmo que o servidor mande um array novo por referencia.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assinatura]);
 
   // No computador (mouse): exige um pequeno arrasto para o clique no card
   // continuar funcionando.
@@ -235,7 +252,16 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
     }),
   );
 
+  function aoComecar() {
+    arrastando.current = true;
+  }
+
+  function aoCancelar() {
+    arrastando.current = false;
+  }
+
   function aoSoltar(evento: DragEndEvent) {
+    arrastando.current = false;
     const novoStatus = evento.over?.id as DemandStatus | undefined;
     const id = String(evento.active.id);
     if (!novoStatus) return;
@@ -243,17 +269,27 @@ export function QuadroKanban({ inicial }: { inicial: CardDemanda[] }) {
     const atual = demandas.find((d) => d.id === id);
     if (!atual || atual.status === novoStatus) return;
 
-    // Move na tela na hora e grava no banco em seguida.
-    setDemandas((lista) =>
-      lista.map((d) => (d.id === id ? { ...d, status: novoStatus } : d)),
+    // Move na tela na hora e grava no banco em seguida. Adiantamos a
+    // "assinatura" para o efeito de sincronizacao com o servidor nao voltar
+    // atras assim que a resposta chegar.
+    const nova = demandas.map((d) =>
+      d.id === id ? { ...d, status: novoStatus } : d,
     );
+    setDemandas(nova);
+    assinaturaAtual.current = nova.map((d) => `${d.id}:${d.status}`).join("|");
+
     iniciar(() => {
       moverDemanda(id, novoStatus);
     });
   }
 
   return (
-    <DndContext sensors={sensors} onDragEnd={aoSoltar}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={aoComecar}
+      onDragCancel={aoCancelar}
+      onDragEnd={aoSoltar}
+    >
       <div className="flex gap-4 overflow-x-auto pb-4">
         {STATUS_ORDER.map((status) => (
           <Coluna
