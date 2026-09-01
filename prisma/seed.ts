@@ -4,6 +4,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { TRILHAS } from "../src/lib/constants";
 
 const db = new PrismaClient();
 
@@ -25,6 +26,13 @@ function inMonths(months: number) {
 
 async function main() {
   // Limpa antes de popular, para poder rodar de novo sem duplicar.
+  await db.quizResult.deleteMany();
+  await db.lessonProgress.deleteMany();
+  await db.lesson.deleteMany();
+  await db.courseModule.deleteMany();
+  await db.courseTrack.deleteMany();
+  await db.course.deleteMany();
+  await db.track.deleteMany();
   await db.comment.deleteMany();
   await db.attachment.deleteMany();
   await db.goal.deleteMany();
@@ -311,7 +319,272 @@ async function main() {
     ],
   });
 
+
+  // --- Cursos da Move -----------------------------------------------------
+  // As trilhas vem do codigo (src/lib/constants.ts), porque o quiz pontua os
+  // mesmos slugs. Aqui elas so ganham uma linha no banco.
+  const trilhas = Object.fromEntries(
+    await Promise.all(
+      Object.entries(TRILHAS).map(async ([slug, info], i) => [
+        slug,
+        await db.track.create({ data: { slug, ...info, order: i } }),
+      ]),
+    ),
+  ) as Record<string, { id: string }>;
+
+  const CURSOS = [
+    {
+      slug: "fundamentos-da-move",
+      title: "Fundamentos da Move",
+      subtitle: "O jeito de pensar antes do jeito de fazer.",
+      description:
+        "A base que atravessa todas as trilhas: por que percepção vem antes de oferta e o que muda quando a direção existe.",
+      level: "INICIANTE",
+      cover: "violeta",
+      featured: false,
+      trilhas: ["posicionamento", "conteudo", "trafego", "audiovisual", "gestao"],
+      modulos: [
+        {
+          title: "Como a Move enxerga o mercado",
+          description: "Três aulas curtas. Nenhuma delas é sobre ferramenta.",
+          level: "INICIANTE",
+          aulas: [
+            { title: "Movimento e direção não são a mesma coisa", durationMin: 9 },
+            { title: "Atenção é ativo — e ativo se administra", durationMin: 11 },
+            { title: "O que a gente escolhe não fazer", durationMin: 8 },
+          ],
+        },
+      ],
+    },
+    {
+      slug: "posicionamento-na-pratica",
+      title: "Posicionamento na prática",
+      subtitle: "Quem parece igual compete igual.",
+      description:
+        "Como uma marca deixa de disputar preço e passa a ocupar espaço. Do diagnóstico da percepção atual até a posição que se sustenta no tempo.",
+      level: "INICIANTE",
+      cover: "laranja",
+      featured: true,
+      trilhas: ["posicionamento"],
+      modulos: [
+        {
+          title: "Percepção antes de oferta",
+          description: "O ponto de partida de quem ainda não definiu posição.",
+          level: "INICIANTE",
+          aulas: [
+            {
+              title: "Marca é percepção acumulada",
+              description: "Por que o mercado decide antes de você apresentar.",
+              durationMin: 14,
+            },
+            { title: "O que já decidiram sobre você", durationMin: 11 },
+            { title: "Quem parece igual compete igual", durationMin: 16 },
+          ],
+        },
+        {
+          title: "Encontrar a posição",
+          description: "Para quem já comunica e quer parar de soar como todo mundo.",
+          level: "INTERMEDIARIO",
+          aulas: [
+            { title: "Território, tensão e promessa", durationMin: 18 },
+            { title: "A frase que sustenta todo o resto", durationMin: 13 },
+            { title: "Testar a posição antes de anunciar", durationMin: 15 },
+          ],
+        },
+        {
+          title: "Sustentar a posição",
+          description: "O que separa uma campanha de uma construção.",
+          level: "AVANCADO",
+          aulas: [
+            { title: "Consistência sem repetição", durationMin: 17 },
+            { title: "Quando mudar custa menos que ficar", durationMin: 14 },
+          ],
+        },
+      ],
+    },
+    {
+      slug: "narrativa-e-conteudo",
+      title: "Narrativa e conteúdo que constrói",
+      subtitle: "O problema não é aparecer. É ser lembrado.",
+      description:
+        "Estrutura de narrativa aplicada a conteúdo: abertura que gera tensão, desenvolvimento que raciocina e fechamento que fica.",
+      level: "INTERMEDIARIO",
+      cover: "grafite",
+      featured: false,
+      trilhas: ["conteudo", "posicionamento"],
+      modulos: [
+        {
+          title: "Antes de escrever",
+          level: "INICIANTE",
+          aulas: [
+            { title: "Assunto não é pauta", durationMin: 10 },
+            { title: "Para quem você está escrevendo de verdade", durationMin: 12 },
+          ],
+        },
+        {
+          title: "Estrutura",
+          description: "A parte que resolve a maioria dos textos travados.",
+          level: "INTERMEDIARIO",
+          aulas: [
+            { title: "Abertura: a tensão em uma linha", durationMin: 15 },
+            { title: "Desenvolvimento sem alívio rápido", durationMin: 16 },
+            { title: "Fechamento memorável", durationMin: 11 },
+          ],
+        },
+        {
+          title: "Volume com direção",
+          level: "AVANCADO",
+          aulas: [
+            { title: "Calendário que constrói percepção", durationMin: 18 },
+            { title: "Repetir sem parecer repetição", durationMin: 14 },
+          ],
+        },
+      ],
+    },
+    {
+      slug: "trafego-com-direcao",
+      title: "Tráfego com direção",
+      subtitle: "Comprar atenção sem direção é aluguel caro.",
+      description:
+        "Estrutura de conta, criativo e leitura de número para campanhas que não dependem de sorte no mês.",
+      level: "INTERMEDIARIO",
+      cover: "oceano",
+      featured: false,
+      trilhas: ["trafego"],
+      modulos: [
+        {
+          title: "Fundamentos de mídia",
+          level: "INICIANTE",
+          aulas: [
+            { title: "Comprar atenção não é comprar demanda", durationMin: 13 },
+            { title: "Estrutura de conta sem gordura", durationMin: 17 },
+          ],
+        },
+        {
+          title: "Oferta e criativo",
+          level: "INTERMEDIARIO",
+          aulas: [
+            { title: "O criativo carrega a campanha", durationMin: 15 },
+            { title: "Cinco ângulos para a mesma oferta", durationMin: 19 },
+          ],
+        },
+        {
+          title: "Leitura de número",
+          level: "AVANCADO",
+          aulas: [
+            { title: "Métrica que decide, métrica que distrai", durationMin: 16 },
+            { title: "Quando escalar e quando cortar", durationMin: 14 },
+          ],
+        },
+      ],
+    },
+    {
+      slug: "audiovisual-com-intencao",
+      title: "Audiovisual com intenção",
+      subtitle: "Estética sem direção é decoração.",
+      description:
+        "Direção, captação e montagem a serviço da mensagem. Da decupagem em uma folha à cor como assinatura.",
+      level: "INICIANTE",
+      cover: "vinho",
+      featured: false,
+      trilhas: ["audiovisual"],
+      modulos: [
+        {
+          title: "Direção",
+          level: "INICIANTE",
+          aulas: [
+            { title: "O que a imagem precisa dizer", durationMin: 12 },
+            { title: "Decupagem em uma folha", durationMin: 15 },
+          ],
+        },
+        {
+          title: "Captação",
+          level: "INTERMEDIARIO",
+          aulas: [
+            { title: "Luz que sustenta a marca", durationMin: 18 },
+            { title: "Áudio: o erro que ninguém perdoa", durationMin: 11 },
+          ],
+        },
+        {
+          title: "Montagem",
+          level: "AVANCADO",
+          aulas: [
+            { title: "Ritmo é argumento", durationMin: 16 },
+            { title: "Cor como assinatura", durationMin: 13 },
+          ],
+        },
+      ],
+    },
+    {
+      slug: "gestao-de-operacao-criativa",
+      title: "Gestão de uma operação criativa",
+      subtitle: "Nada cresce parado — e nada cresce no improviso.",
+      description:
+        "Processo, precificação e comercial: a estrutura que sustenta o crescimento que a comunicação abre.",
+      level: "INTERMEDIARIO",
+      cover: "floresta",
+      featured: false,
+      trilhas: ["gestao"],
+      modulos: [
+        {
+          title: "Rotina",
+          level: "INICIANTE",
+          aulas: [
+            { title: "Processo é o que segura promessa", durationMin: 14 },
+            { title: "Escopo fechado, cliente calmo", durationMin: 12 },
+          ],
+        },
+        {
+          title: "Preço",
+          level: "INTERMEDIARIO",
+          aulas: [
+            { title: "Precificar por valor percebido", durationMin: 20 },
+            { title: "Reajuste sem perder o cliente", durationMin: 13 },
+          ],
+        },
+        {
+          title: "Comercial",
+          level: "AVANCADO",
+          aulas: [{ title: "A reunião que vende sem empurrar", durationMin: 17 }],
+        },
+      ],
+    },
+  ];
+
+  for (const [i, curso] of CURSOS.entries()) {
+    const { trilhas: slugs, modulos, ...dados } = curso;
+    await db.course.create({
+      data: {
+        ...dados,
+        order: i,
+        tracks: {
+          create: slugs.map((slug, j) => ({
+            trackId: trilhas[slug].id,
+            order: j,
+          })),
+        },
+        modules: {
+          create: modulos.map((m, k) => ({
+            title: m.title,
+            description: "description" in m ? m.description : null,
+            level: m.level,
+            order: k,
+            lessons: {
+              create: m.aulas.map((a, l) => ({
+                title: a.title,
+                description: "description" in a ? a.description : null,
+                durationMin: a.durationMin,
+                order: l,
+              })),
+            },
+          })),
+        },
+      },
+    });
+  }
+
   console.log(`Pronto! ${equipe.length} pessoas, ${clientes.length} clientes e ${demandas.length} demandas criadas.`);
+  console.log(`${CURSOS.length} cursos publicados em ${Object.keys(trilhas).length} trilhas.`);
   console.log(`Entre com ${admin.email} e a senha move123`);
 }
 

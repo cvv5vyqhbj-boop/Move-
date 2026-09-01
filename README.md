@@ -1,7 +1,7 @@
 # Sistema da Move
 
-Sistema de gestão da agência: clientes, contratos, demandas, kanban, financeiro e
-metas do mês — com acesso separado por cargo.
+Sistema de gestão da agência: clientes, contratos, demandas, kanban, financeiro,
+metas do mês e os **cursos da Move** — com acesso separado por cargo.
 
 > **Quer colocar o sistema no ar?**
 > Siga o **[COMO-PUBLICAR-NA-INTERNET.md](COMO-PUBLICAR-NA-INTERNET.md)** — passo
@@ -56,6 +56,8 @@ Os dados de exemplo já criam uma pessoa para cada cargo. **A senha de todas é
 | **Demandas**      | Lista de tudo que precisa ser feito, com cliente, responsável e prazo. Dentro de cada uma: **conversa da equipe** e **links dos materiais** | Todos |
 | **Kanban**        | Quadro de arrastar e soltar (Ideias → A fazer → Fazendo → Revisão → Pronto) | Todos |
 | **Metas do mês**  | Objetivos da agência, da equipe e de cada pessoa, com barra de progresso | Todos |
+| **Cursos**        | Vitrine dos cursos da Move. Na primeira entrada, um **quiz** define a trilha da pessoa e **por qual módulo ela começa** | Todos |
+| **Gerenciar cursos** | Cadastro dos cursos: módulos por nível, aulas e links dos vídeos | Admin |
 | **Calendário**    | Prazos de entrega e (para o admin) vencimentos do mês                 | Todos   |
 | **Clientes**      | Ficha do cliente, tempo de casa, contratos e histórico                | Admin   |
 | **Contratos**     | O que cada cliente contratou, por quanto e desde quando               | Admin   |
@@ -70,6 +72,41 @@ No topo da tela, o sino mostra o que precisa de atenção hoje: suas demandas qu
 venceram ou vencem hoje e — só para o administrador — clientes que não pagaram,
 contas vencidas e contratos chegando ao fim (aviso com 60 dias de antecedência).
 A regra fica em `src/lib/avisos.ts`.
+
+### Os cursos e o quiz que decide por onde começar
+
+A tela **Cursos** é uma vitrine escura, no estilo de um catálogo de vídeo: um
+destaque grande no topo e fileiras que rolam para o lado. É a única tela escura
+do sistema, de propósito — estudar não é a mesma coisa que trabalhar.
+
+Ninguém entra na vitrine sem responder o quiz. São oito perguntas que separam
+duas coisas que costumam ser tratadas como uma só:
+
+- **Direção** (5 perguntas) — cada resposta soma pontos em uma ou mais trilhas.
+  A trilha com mais pontos vence. As trilhas são Posicionamento e marca,
+  Conteúdo e narrativa, Tráfego e aquisição, Audiovisual e direção, e Gestão e
+  comercial.
+- **Ponto de partida** (3 perguntas) — cada resposta vale de 0 a 2 pontos de
+  repertório. A soma vira o nível: base, prática ou avançado.
+
+O nível não muda só a ordem da vitrine: **cada módulo do curso também tem um
+nível**, e é comparando os dois que o sistema diz por onde a pessoa entra. Quem
+já pratica tráfego abre "Tráfego com direção" direto no módulo de leitura de
+número; os módulos anteriores aparecem marcados como **revisão opcional** — nada
+fica trancado, só deixa de ser o caminho principal.
+
+Quem quiser mudar não precisa pedir para ninguém: na faixa do topo dá para
+ajustar o nível ou refazer o quiz. Refazer não apaga o progresso das aulas.
+
+As perguntas ficam em `src/lib/quiz.ts` e as regras de "por onde começar" em
+`src/lib/cursos.ts` (`ondeComecar`). As cinco trilhas moram em
+`src/lib/constants.ts` e o sistema cria as linhas no banco sozinho na primeira
+vez que alguém abre a tela — não depende do seed.
+
+**Para publicar um curso** (admin): *Gerenciar cursos* → novo curso → escolha as
+trilhas em que ele aparece → crie os módulos, **definindo o nível de cada um** →
+adicione as aulas com o link do YouTube ou do Vimeo. O vídeo toca dentro do
+sistema. Aula sem link continua na lista, avisando que ainda não tem vídeo.
 
 ### Mensalidades sem digitar tudo de novo
 
@@ -132,6 +169,8 @@ src/lib/constants.ts     todos os textos e listas (áreas, cargos, situações)
 src/lib/format.ts        formatação de dinheiro, datas e "tempo de casa"
 src/lib/financeiro.ts    contas do financeiro, usadas no painel e nos relatórios
 src/lib/avisos.ts        o que aparece no sino de avisos
+src/lib/quiz.ts          as perguntas do quiz e o cálculo de trilha e nível
+src/lib/cursos.ts        vitrine, progresso e a regra de "por onde começar"
 src/lib/planilha.ts      geração dos arquivos de planilha (CSV)
 src/app/(sistema)/       as telas de dentro do sistema
 src/app/actions/         ações que gravam no banco

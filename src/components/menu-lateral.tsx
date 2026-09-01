@@ -9,17 +9,19 @@ import {
   CalendarDays,
   ClipboardList,
   FileText,
+  GraduationCap,
   LayoutDashboard,
   LogOut,
   Menu,
   Target,
   Kanban,
+  Projector,
   Users,
   UsersRound,
   Wallet,
   X,
 } from "lucide-react";
-import { MODULES, type Module } from "@/lib/permissions";
+import { MODULES, moduleForPath, type Module } from "@/lib/permissions";
 import { ROLES, type Role } from "@/lib/constants";
 import { sair } from "@/app/actions/auth";
 import { TrocaTema } from "./troca-tema";
@@ -30,6 +32,8 @@ const ICONS: Record<Module, typeof LayoutDashboard> = {
   KANBAN: Kanban,
   METAS: Target,
   CALENDARIO: CalendarDays,
+  CURSOS: Projector,
+  CURSOS_ADMIN: GraduationCap,
   CLIENTES: Users,
   CONTRATOS: FileText,
   FINANCEIRO: Wallet,
@@ -62,8 +66,9 @@ export function MenuLateral({
         {modules.map((key) => {
           const { label, path } = MODULES[key];
           const Icon = ICONS[key];
-          const ativo =
-            path === "/" ? pathname === "/" : pathname.startsWith(path);
+          // Mesma regra do middleware: o caminho mais especifico vence. Sem
+          // isso, "Cursos" e "Gerenciar cursos" acenderiam juntos.
+          const ativo = moduleForPath(pathname) === key;
           return (
             <Link
               key={key}

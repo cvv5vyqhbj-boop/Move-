@@ -13,6 +13,8 @@ export const MODULES = {
   DEMANDAS: { label: "Demandas", path: "/demandas" },
   KANBAN: { label: "Kanban", path: "/kanban" },
   METAS: { label: "Metas do mês", path: "/metas" },
+  CURSOS: { label: "Cursos", path: "/cursos" },
+  CURSOS_ADMIN: { label: "Gerenciar cursos", path: "/cursos/gerenciar" },
   CALENDARIO: { label: "Calendário", path: "/calendario" },
   CLIENTES: { label: "Clientes", path: "/clientes" },
   CONTRATOS: { label: "Contratos", path: "/contratos" },
@@ -30,10 +32,12 @@ const DA_EQUIPE: Module[] = [
   "KANBAN",
   "METAS",
   "CALENDARIO",
+  "CURSOS",
 ];
 
 /** Modulos restritos a quem administra a agencia. */
 const SO_ADMIN: Module[] = [
+  "CURSOS_ADMIN",
   "CLIENTES",
   "CONTRATOS",
   "FINANCEIRO",
@@ -56,7 +60,12 @@ export function can(role: Role, module: Module): boolean {
   return ROLE_MODULES[role]?.includes(module) ?? false;
 }
 
-/** Descobre a qual modulo uma rota pertence (a mais especifica vence). */
+/**
+ * Descobre a qual modulo uma rota pertence (a mais especifica vence).
+ *
+ * E por isso que "/cursos/gerenciar" cai em CURSOS_ADMIN e nao em CURSOS:
+ * o caminho mais longo que casa e o que manda.
+ */
 export function moduleForPath(pathname: string): Module | null {
   let found: Module | null = null;
   let longest = -1;
