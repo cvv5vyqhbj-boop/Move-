@@ -1,5 +1,6 @@
 import { requireModule } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { demandasDaPessoa, nomesNoChamado } from "@/lib/demandas";
 import { AREAS } from "@/lib/constants";
 import { QuadroKanban } from "@/components/quadro-kanban";
 import { Button, LinkButton, PageHeader, Select } from "@/components/ui";
@@ -24,7 +25,7 @@ export default async function KanbanPage({
     ...(filtros.cliente ? { clientId: filtros.cliente } : {}),
     ...(filtros.area ? { area: filtros.area } : {}),
     ...(modo === "minhas"
-      ? { assigneeId: user.id, status: { not: "CONCLUIDO" } }
+      ? { ...demandasDaPessoa(user.id), status: { not: "CONCLUIDO" } }
       : {}),
   };
 
@@ -34,6 +35,7 @@ export default async function KanbanPage({
       include: {
         client: true,
         assignee: true,
+        participants: { select: { id: true, name: true } },
         _count: { select: { comments: true } },
       },
       orderBy: [{ order: "asc" }, { createdAt: "asc" }],
@@ -107,9 +109,11 @@ export default async function KanbanPage({
           dueDate: d.dueDate,
           internalDueDate: d.internalDueDate,
           clienteNome: d.client?.name ?? "Interno",
-          responsavelNome: d.assignee?.name ?? "Sem responsável",
+          responsavelNome: nomesNoChamado(d.assignee, d.participants),
           comentarios: d._count.comments,
-          minha: d.assigneeId === user.id,
+          minha:
+            d.assigneeId === user.id ||
+            d.participants.some((p) => p.id === user.id),
         }))}
       />
     </>

@@ -202,6 +202,55 @@ recarregar com as novas variáveis. Assim que subir:
 
 ---
 
+## Anexar arquivos nas demandas (PDF, imagem)
+
+Para o botão **"Anexar arquivo"** dentro da demanda funcionar, cadastre mais
+uma variável na Netlify. Sem ela, a demanda continua aceitando links
+normalmente — só o envio de arquivo avisa que falta configurar.
+
+No Supabase, em **Project Settings → API Keys**, copie a chave **secreta**
+(aparece como "Secret key" `sb_secret_...` ou como "service_role").
+
+| Nome | O que colar |
+| --- | --- |
+| `SUPABASE_SERVICE_ROLE_KEY` | A chave secreta do Supabase |
+
+> ⚠️ **Essa chave abre tudo no Supabase.** Ela só deve viver na tela de
+> variáveis da Netlify, nunca em e-mail, WhatsApp ou GitHub.
+
+A pasta dos arquivos (`anexos`) é criada sozinha no primeiro envio, privada:
+só abre quem está logado no sistema. Limite de 50 MB por arquivo; o plano
+grátis do Supabase guarda até 1 GB no total.
+
+Depois de cadastrar, clique em **Trigger deploy → Deploy site**.
+
+---
+
+## E-mail avisando de demanda nova
+
+Quando alguém é colocado numa demanda (como responsável ou em "Também no
+chamado"), o sistema manda um e-mail para essa pessoa com o título, o cliente,
+o prazo e um botão para abrir a demanda. Quem fez a alteração não recebe.
+
+O envio usa o **Resend** (resend.com), de graça até 3.000 e-mails por mês:
+
+1. Crie a conta em [resend.com](https://resend.com).
+2. Em **Domains**, adicione o domínio da Move (ex.: `agenciamove.com.br`) e
+   cadastre no seu provedor de domínio os registros que ele mostrar. Sem
+   domínio confirmado, o Resend só entrega e-mail para o dono da conta.
+3. Em **API Keys**, crie uma chave.
+4. Na Netlify, cadastre:
+
+| Nome | O que colar |
+| --- | --- |
+| `RESEND_API_KEY` | A chave criada no Resend (`re_...`) |
+| `EMAIL_REMETENTE` | Quem aparece como remetente, ex.: `Sistema Move <avisos@agenciamove.com.br>` (o domínio tem que ser o confirmado no passo 2) |
+
+Depois, **Trigger deploy → Deploy site**. Sem essas variáveis, nada quebra: a
+demanda salva normalmente, só o e-mail não sai.
+
+---
+
 ## Publicando mudanças depois
 
 Toda vez que o código mudar no GitHub, a Netlify republica sozinha. Você não

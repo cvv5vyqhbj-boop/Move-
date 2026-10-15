@@ -2,6 +2,7 @@ import { requireModule } from "@/lib/auth";
 import { LinhaClicavel } from "@/components/linha-clicavel";
 import { CorDaArea } from "@/components/etiquetas";
 import { db } from "@/lib/db";
+import { demandasDaPessoa, nomesNoChamado } from "@/lib/demandas";
 import { AREAS, STATUS } from "@/lib/constants";
 import { date, dueLabel } from "@/lib/format";
 import {
@@ -34,28 +35,33 @@ export default async function DemandasPage({
   const busca = filtros.busca?.trim();
 
   const where = {
-    ...(busca
-      ? {
-          AND: [
+    AND: [
+      ...(busca
+        ? [
             {
               OR: [
                 { title: { contains: busca } },
                 { description: { contains: busca } },
               ],
             },
-          ],
-        }
-      : {}),
+          ]
+        : []),
+      // Filtrar por pessoa pega quem e responsavel e quem tambem esta no chamado.
+      ...(filtros.pessoa ? [demandasDaPessoa(filtros.pessoa)] : []),
+    ],
     ...(filtros.cliente ? { clientId: filtros.cliente } : {}),
     ...(filtros.area ? { area: filtros.area } : {}),
-    ...(filtros.pessoa ? { assigneeId: filtros.pessoa } : {}),
     ...(filtros.situacao ? { status: filtros.situacao } : {}),
   };
 
   const [demandas, clientes, pessoas] = await Promise.all([
     db.demand.findMany({
       where,
-      include: { client: true, assignee: true },
+      include: {
+        client: true,
+        assignee: true,
+        participants: { select: { name: true } },
+      },
       orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
     }),
     db.client.findMany({ orderBy: { name: "asc" } }),
@@ -152,7 +158,7 @@ export default async function DemandasPage({
                 <EtiquetaArea area={d.area} />
               </TCell>
               <TCell className="text-slate-600">
-                {d.assignee?.name ?? "Sem responsável"}
+                {nomesNoChamado(d.assignee, d.participants)}
               </TCell>
               <TCell className="whitespace-nowrap">
                 {d.internalDueDate && (

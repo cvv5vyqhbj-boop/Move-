@@ -1,6 +1,7 @@
 import { db } from "./db";
 import type { SessionUser } from "./session";
 import { daysUntil } from "./format";
+import { demandasDaPessoa } from "./demandas";
 
 export type Aviso = {
   texto: string;
@@ -28,7 +29,7 @@ export async function avisosDe(user: SessionUser): Promise<Aviso[]> {
   // --- Minhas demandas com prazo estourando -------------------------------
   const minhas = await db.demand.findMany({
     where: {
-      assigneeId: user.id,
+      ...demandasDaPessoa(user.id),
       status: { not: "CONCLUIDO" },
       dueDate: { lte: fimDeHoje },
     },

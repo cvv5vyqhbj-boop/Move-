@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireModule } from "@/lib/auth";
 import { filtroDeVisibilidade } from "@/lib/demandas";
+import { avisarPorEmail } from "@/lib/email";
 
 function texto(dados: FormData, campo: string) {
   const valor = String(dados.get(campo) ?? "").trim();
@@ -12,7 +13,7 @@ function texto(dados: FormData, campo: string) {
 }
 
 export async function salvarDemanda(dados: FormData) {
-  await requireModule("DEMANDAS");
+  const user = await requireModule("DEMANDAS");
 
   const id = texto(dados, "id");
   const prazo = texto(dados, "dueDate");
@@ -32,10 +33,50 @@ export async function salvarDemanda(dados: FormData) {
 
   if (!valores.title) return;
 
-  if (id) {
-    await db.demand.update({ where: { id }, data: valores });
-  } else {
-    await db.demand.create({ data: valores });
+  // Outras pessoas no chamado, alem do responsavel principal.
+  const participantes = [
+    ...new Set(dados.getAll("participantIds").map(String).filter(Boolean)),
+  ].filter((p) => p !== valores.assigneeId);
+
+  // Quem ja estava na demanda antes de salvar (para avisar so quem entrou agora).
+  const antes = id
+    ? await db.demand.findUnique({
+        where: { id },
+        select: { assigneeId: true, participants: { select: { id: true } } },
+      })
+    : null;
+  const jaEstavam = new Set(
+    [antes?.assigneeId, ...(antes?.participants.map((p) => p.id) ?? [])].filter(
+      Boolean,
+    ),
+  );
+
+  const ligacao = participantes.map((p) => ({ id: p }));
+  const demanda = id
+    ? await db.demand.update({
+        where: { id },
+        data: { ...valores, participants: { set: ligacao } },
+        include: { client: { select: { name: true } } },
+      })
+    : await db.demand.create({
+        data: { ...valores, participants: { connect: ligacao } },
+        include: { client: { select: { name: true } } },
+      });
+
+  // Avisa por e-mail quem acabou de entrar na demanda. Quem salvou ja sabe.
+  const novos = [valores.assigneeId, ...participantes].filter(
+    (p): p is string => !!p && !jaEstavam.has(p) && p !== user.id,
+  );
+  if (novos.length > 0) {
+    const pessoas = await db.user.findMany({
+      where: { id: { in: novos }, active: true },
+      select: { name: true, email: true },
+    });
+    await avisarPorEmail(
+      pessoas,
+      { ...demanda, clienteNome: demanda.client?.name ?? null },
+      user.name,
+    );
   }
 
   atualizarTudo();

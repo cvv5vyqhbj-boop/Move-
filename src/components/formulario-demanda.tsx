@@ -23,6 +23,7 @@ type Demanda = {
   priority: string;
   internalDueDate: Date | null;
   dueDate: Date | null;
+  participants: { id: string }[];
 };
 
 /** Mesmo formulario para criar e para editar uma demanda. */
@@ -37,6 +38,7 @@ export function FormularioDemanda({
 }) {
   const opcoes = (obj: Record<string, string>) =>
     Object.entries(obj).map(([value, label]) => ({ value, label }));
+  const participantes = new Set(demanda?.participants.map((p) => p.id));
 
   return (
     <div className="space-y-4">
@@ -74,7 +76,7 @@ export function FormularioDemanda({
 
           <FormSection
             title="Para quem e quem faz"
-            subtitle="Cliente, área e responsável."
+            subtitle="Cliente, área, responsável e quem mais está no chamado. Quem entra recebe um e-mail avisando."
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Cliente">
@@ -102,6 +104,33 @@ export function FormularioDemanda({
                   options={pessoas.map((p) => ({ value: p.id, label: p.name }))}
                 />
               </Field>
+
+              {/* Nao usa <Field> porque ele e um <label>, e aqui ja tem um por pessoa. */}
+              <div className="sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Também no chamado
+                </span>
+                <div className="grid gap-1.5 rounded-lg border border-slate-200 p-3 sm:grid-cols-2">
+                  {pessoas.map((p) => (
+                    <label
+                      key={p.id}
+                      className="flex cursor-pointer items-center gap-2 text-sm text-slate-700"
+                    >
+                      <input
+                        type="checkbox"
+                        name="participantIds"
+                        value={p.id}
+                        defaultChecked={participantes.has(p.id)}
+                        className="h-4 w-4 accent-marca-600"
+                      />
+                      {p.name}
+                    </label>
+                  ))}
+                </div>
+                <span className="mt-1.5 block text-xs leading-relaxed text-slate-500">
+                  Marque quem mais participa desta demanda.
+                </span>
+              </div>
             </div>
           </FormSection>
 

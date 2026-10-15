@@ -1,4 +1,4 @@
-import { ExternalLink, Trash2 } from "lucide-react";
+import { Download, ExternalLink, FileText, Trash2 } from "lucide-react";
 import {
   adicionarLink,
   apagarComentario,
@@ -8,6 +8,8 @@ import {
 import { ROLE_AREA, type Role } from "@/lib/constants";
 import { Button, Card, Input, Textarea } from "./ui";
 import { CorDaArea } from "./etiquetas";
+import { EnviarArquivo } from "./enviar-arquivo";
+import { tamanhoLegivel } from "@/lib/arquivos";
 
 type Comentario = {
   id: string;
@@ -35,7 +37,13 @@ function corDoAvatar(role: string | undefined): string {
   return AREA_AVATAR[area] ?? "bg-slate-100 text-slate-600";
 }
 
-type Link = { id: string; title: string; url: string };
+type Link = {
+  id: string;
+  title: string;
+  url: string | null;
+  path: string | null;
+  size: number | null;
+};
 
 /** "há 5 minutos", "ontem", "12/08 às 14:30" */
 function quando(data: Date) {
@@ -151,24 +159,45 @@ export function ConversaDemanda({
       <Card>
         <h2 className="font-semibold text-slate-900">Materiais</h2>
         <p className="mb-4 text-sm text-slate-500">
-          Links do drive, do briefing ou da arte aprovada — tudo junto da demanda.
+          Arquivos (PDF, imagem) e links do drive, do briefing ou da arte
+          aprovada — tudo junto da demanda.
         </p>
 
         {links.length === 0 ? (
-          <p className="py-2 text-sm text-slate-400">Nenhum link guardado ainda.</p>
+          <p className="py-2 text-sm text-slate-400">
+            Nenhum arquivo ou link guardado ainda.
+          </p>
         ) : (
           <ul className="mb-5 divide-y divide-slate-100">
             {links.map((l) => (
               <li key={l.id} className="flex items-center justify-between gap-3 py-2">
                 <a
-                  href={l.url}
+                  href={l.path ? `/anexos/${l.id}` : (l.url ?? "#")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex min-w-0 items-center gap-2 text-sm text-marca-600 hover:underline"
                 >
-                  <ExternalLink size={14} className="shrink-0" />
+                  {l.path ? (
+                    <FileText size={14} className="shrink-0" />
+                  ) : (
+                    <ExternalLink size={14} className="shrink-0" />
+                  )}
                   <span className="truncate">{l.title}</span>
+                  {l.size != null && (
+                    <span className="shrink-0 text-xs text-slate-400">
+                      {tamanhoLegivel(l.size)}
+                    </span>
+                  )}
                 </a>
+                {l.path && (
+                  <a
+                    href={`/anexos/${l.id}?baixar=1`}
+                    title="Baixar"
+                    className="ml-auto text-slate-300 hover:text-marca-600"
+                  >
+                    <Download size={15} />
+                  </a>
+                )}
                 <form action={apagarLink}>
                   <input type="hidden" name="id" value={l.id} />
                   <button
@@ -189,9 +218,11 @@ export function ConversaDemanda({
           <Input name="title" placeholder="Nome (ex.: Briefing)" />
           <Input name="url" placeholder="Cole o link aqui" required />
           <Button type="submit" variant="secundario">
-            Guardar
+            Guardar link
           </Button>
         </form>
+
+        <EnviarArquivo demandId={demandId} />
       </Card>
     </div>
   );

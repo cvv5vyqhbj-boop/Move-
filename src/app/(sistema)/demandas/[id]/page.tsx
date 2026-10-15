@@ -26,6 +26,7 @@ export default async function EditarDemandaPage({
           orderBy: { createdAt: "asc" },
         },
         attachments: { orderBy: { createdAt: "asc" } },
+        participants: { select: { id: true } },
       },
     }),
     db.client.findMany({ orderBy: { name: "asc" } }),

@@ -53,7 +53,7 @@ Os dados de exemplo já criam uma pessoa para cada cargo. **A senha de todas é
 | Tela              | Para quê serve                                                        | Quem vê |
 | ----------------- | --------------------------------------------------------------------- | ------- |
 | **Painel**        | Resumo do mês: entregas próximas, atrasos e metas                     | Todos   |
-| **Demandas**      | Lista de tudo que precisa ser feito, com cliente, responsável e prazo. Dentro de cada uma: **conversa da equipe** e **links dos materiais** | Todos |
+| **Demandas**      | Lista de tudo que precisa ser feito, com cliente, responsável (e quem mais está no chamado) e prazo. Dentro de cada uma: **conversa da equipe**, **links** e **arquivos anexados** (PDF, imagem). Quem é colocado na demanda recebe **e-mail avisando** | Todos |
 | **Kanban**        | Quadro de arrastar e soltar (Ideias → A fazer → Fazendo → Revisão → Pronto) | Todos |
 | **Metas do mês**  | Objetivos da agência, da equipe e de cada pessoa, com barra de progresso | Todos |
 | **Calendário**    | Prazos de entrega e (para o admin) vencimentos do mês                 | Todos   |
