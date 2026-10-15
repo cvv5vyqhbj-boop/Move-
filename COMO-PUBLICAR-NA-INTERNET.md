@@ -232,22 +232,32 @@ Quando alguém é colocado numa demanda (como responsável ou em "Também no
 chamado"), o sistema manda um e-mail para essa pessoa com o título, o cliente,
 o prazo e um botão para abrir a demanda. Quem fez a alteração não recebe.
 
-O envio usa o **Resend** (resend.com), de graça até 3.000 e-mails por mês:
+O e-mail sai pelo Gmail da Move, **contatomoveofc@gmail.com**. Precisa de uma
+"senha de app" — uma senha especial que só serve para o sistema mandar e-mail
+(não é a senha normal do Gmail, e não dá acesso a mais nada).
 
-1. Crie a conta em [resend.com](https://resend.com).
-2. Em **Domains**, adicione o domínio da Move (ex.: `agenciamove.com.br`) e
-   cadastre no seu provedor de domínio os registros que ele mostrar. Sem
-   domínio confirmado, o Resend só entrega e-mail para o dono da conta.
-3. Em **API Keys**, crie uma chave.
-4. Na Netlify, cadastre:
+1. Entre em [myaccount.google.com](https://myaccount.google.com) com a conta
+   contatomoveofc@gmail.com.
+2. Em **Segurança**, ligue a **Verificação em duas etapas** (sem ela o Google
+   não deixa criar senha de app).
+3. Abra [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords),
+   dê o nome **Sistema Move** e clique em **Criar**. Aparece uma senha de 16
+   letras — copie.
+4. Na Netlify (**Site configuration → Environment variables**), cadastre:
 
 | Nome | O que colar |
 | --- | --- |
-| `RESEND_API_KEY` | A chave criada no Resend (`re_...`) |
-| `EMAIL_REMETENTE` | Quem aparece como remetente, ex.: `Sistema Move <avisos@agenciamove.com.br>` (o domínio tem que ser o confirmado no passo 2) |
+| `GMAIL_USER` | `contatomoveofc@gmail.com` |
+| `GMAIL_APP_PASSWORD` | A senha de 16 letras do passo 3 (com ou sem espaços) |
 
-Depois, **Trigger deploy → Deploy site**. Sem essas variáveis, nada quebra: a
-demanda salva normalmente, só o e-mail não sai.
+5. **Deploys → Trigger deploy → Deploy site**.
+
+> ⚠️ Essa senha só deve viver na tela de variáveis da Netlify. Se desconfiar
+> que vazou, apague ela na mesma página do passo 3 e crie outra.
+
+Para testar: coloque **outra pessoa** numa demanda e salve. O e-mail chega em
+alguns segundos (vale olhar o spam na primeira vez). Sem essas variáveis, nada
+quebra: a demanda salva normalmente, só o e-mail não sai.
 
 ---
 
